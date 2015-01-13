@@ -55,23 +55,25 @@ namespace OpenOnGitHub
             try
             {
                 // TODO:is should avoid create GitAnalysis every call?
-                var git = new GitAnalysis(GetActiveFilePath());
-                if (!git.IsDiscoveredGitRepository)
+                using (var git = new GitAnalysis(GetActiveFilePath()))
                 {
-                    command.Enabled = false;
-                    return;
-                }
+                    if (!git.IsDiscoveredGitRepository)
+                    {
+                        command.Enabled = false;
+                        return;
+                    }
 
-                var type = ToGitHubUrlType(command.CommandID.ID);
-                var targetPath = git.GetGitHubTargetPath(type);
-                if (type == GitHubUrlType.CurrentBranch && targetPath == "master")
-                {
-                    command.Visible = false;
-                }
-                else
-                {
-                    command.Text = targetPath;
-                    command.Enabled = true;
+                    var type = ToGitHubUrlType(command.CommandID.ID);
+                    var targetPath = git.GetGitHubTargetPath(type);
+                    if (type == GitHubUrlType.CurrentBranch && targetPath == "master")
+                    {
+                        command.Visible = false;
+                    }
+                    else
+                    {
+                        command.Text = targetPath;
+                        command.Enabled = true;
+                    }
                 }
             }
             catch (Exception ex)
@@ -88,14 +90,16 @@ namespace OpenOnGitHub
             var command = (OleMenuCommand)sender;
             try
             {
-                var git = new GitAnalysis(GetActiveFilePath());
-                if (!git.IsDiscoveredGitRepository)
+                using (var git = new GitAnalysis(GetActiveFilePath()))
                 {
-                    return;
+                    if (!git.IsDiscoveredGitRepository)
+                    {
+                        return;
+                    }
+                    var type = ToGitHubUrlType(command.CommandID.ID);
+                    var gitHubUrl = git.BuildGitHubUrl(type);
+                    System.Diagnostics.Process.Start(gitHubUrl); // open browser
                 }
-                var type = ToGitHubUrlType(command.CommandID.ID);
-                var gitHubUrl = git.BuildGitHubUrl(type);
-                System.Diagnostics.Process.Start(gitHubUrl); // open browser
             }
             catch (Exception ex)
             {

@@ -12,7 +12,7 @@ namespace OpenOnGitHub
         CurrentRevision
     }
 
-    public class GitAnalysis
+    public class GitAnalysis : IDisposable
     {
         readonly Repository repository;
         readonly string targetFullPath;
@@ -50,7 +50,9 @@ namespace OpenOnGitHub
             if (originUrl == null) throw new InvalidOperationException("OriginUrl can't found");
 
             // https://github.com/user/repo
-            var urlRoot = originUrl.Value.Substring(0, originUrl.Value.Length - 4); // remove .git
+            var urlRoot = (originUrl.Value.EndsWith(".git", StringComparison.InvariantCultureIgnoreCase))
+                ? originUrl.Value.Substring(0, originUrl.Value.Length - 4) // remove .git
+                : originUrl.Value;
 
             // foo/bar.cs
             var rootDir = new DirectoryInfo(repository.Info.Path).Parent.FullName;
@@ -60,6 +62,14 @@ namespace OpenOnGitHub
 
             var fileUrl = string.Format("{0}/blob/{1}/{2}", urlRoot, repositoryTarget, fileIndexPath);
             return fileUrl;
+        }
+
+        public void Dispose()
+        {
+            if (repository != null)
+            {
+                repository.Dispose();
+            }
         }
     }
 }
