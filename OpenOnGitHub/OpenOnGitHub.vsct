@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <Extern href="stdidcmd.h"/>
+    <Extern href="vsshlids.h"/>
+
+    <Commands package="guidOpenOnGitHubPkg">
+        <Menus>
+            <Menu guid="guidOpenOnGitHubCmdSet" id="SubMenu" priority="0x0100" type="Menu">
+                <Parent guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" />
+                <Strings>
+                    <ButtonText>Open on GitHub</ButtonText>
+                </Strings>
+            </Menu>
+        </Menus>
+
+        <Groups>
+            <Group guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+                <!--<Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>-->
+                <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN" />
+            </Group>
+            <Group guid="guidOpenOnGitHubCmdSet" id="SubMenuGroup" priority="0x0600">
+                <Parent guid="guidOpenOnGitHubCmdSet" id="SubMenu" />
+            </Group>
+        </Groups>
+
+        <Buttons>
+            <Button guid="guidOpenOnGitHubCmdSet" id="OpenMaster" priority="0x0100" type="Button">
+                <Parent guid="guidOpenOnGitHubCmdSet" id="SubMenuGroup" />
+                <Strings>
+                    <ButtonText>master</ButtonText>
+                    <CommandName>master</CommandName>
+                </Strings>
+            </Button>
+            <Button guid="guidOpenOnGitHubCmdSet" id="OpenBranch" priority="0x0200" type="Button">
+                <Parent guid="guidOpenOnGitHubCmdSet" id="SubMenuGroup" />
+                <CommandFlag>TextChanges</CommandFlag>
+                <CommandFlag>DynamicVisibility</CommandFlag>
+                <Strings>
+                    <ButtonText>branch</ButtonText>
+                    <CommandName>branch</CommandName>
+                </Strings>
+            </Button>
+            <Button guid="guidOpenOnGitHubCmdSet" id="OpenRevision" priority="0x0300" type="Button">
+                <Parent guid="guidOpenOnGitHubCmdSet" id="SubMenuGroup" />
+                <CommandFlag>TextChanges</CommandFlag>
+                <Strings>
+                    <ButtonText>revision</ButtonText>
+                    <CommandName>revision</CommandName>
+                </Strings>
+            </Button>
+        </Buttons>
+    </Commands>
+
+    <Symbols>
+        <GuidSymbol name="guidOpenOnGitHubPkg" value="{465b40b6-311a-4e37-9556-95fced2de9c6}" />
+
+        <GuidSymbol name="guidOpenOnGitHubCmdSet" value="{a674aaec-a6f5-4df0-9749-e7bef776df5d}">
+            <IDSymbol name="ContextMenuGroup" value="0x1020" />
+            <IDSymbol name="SubMenuGroup" value="0x1030" />
+            <IDSymbol name="SubMenu" value="0x1040" />
+            <!-- Command -->
+            <IDSymbol name="OpenMaster" value="0x0100" />
+            <IDSymbol name="OpenBranch" value="0x0200" />
+            <IDSymbol name="OpenRevision" value="0x0300" />
+        </GuidSymbol>
+    </Symbols>
+</CommandTable>
