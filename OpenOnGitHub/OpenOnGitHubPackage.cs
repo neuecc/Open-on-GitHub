@@ -105,8 +105,29 @@ namespace OpenOnGitHub
 
         string GetActiveFilePath()
         {
-            var info = new FileInfo(DTE.ActiveDocument.Path + DTE.ActiveDocument.Name);
-            return info.FullName;
+            // sometimes, DTE.ActiveDocument.Path is ToLower but GitHub can't open lower path.
+            // fix proper-casing | http://stackoverflow.com/questions/325931/getting-actual-file-name-with-proper-casing-on-windows-with-net
+            var path = GetExactPathName(DTE.ActiveDocument.Path + DTE.ActiveDocument.Name);
+            return path;
+        }
+
+        static string GetExactPathName(string pathName)
+        {
+            if (!(File.Exists(pathName) || Directory.Exists(pathName)))
+                return pathName;
+
+            var di = new DirectoryInfo(pathName);
+
+            if (di.Parent != null)
+            {
+                return Path.Combine(
+                    GetExactPathName(di.Parent.FullName),
+                    di.Parent.GetFileSystemInfos(di.Name)[0].Name);
+            }
+            else
+            {
+                return di.Name.ToUpper();
+            }
         }
 
         static GitHubUrlType ToGitHubUrlType(int commandId)
