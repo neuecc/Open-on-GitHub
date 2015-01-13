@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.ComponentModel.Design;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace OpenOnGitHub
@@ -104,7 +105,8 @@ namespace OpenOnGitHub
 
         string GetActiveFilePath()
         {
-            return DTE.ActiveDocument.Path + DTE.ActiveDocument.Name;
+            var info = new FileInfo(DTE.ActiveDocument.Path + DTE.ActiveDocument.Name);
+            return info.FullName;
         }
 
         static GitHubUrlType ToGitHubUrlType(int commandId)
