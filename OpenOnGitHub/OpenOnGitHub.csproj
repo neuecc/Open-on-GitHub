@@ -149,8 +149,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="SolutionItems\LICENSE" />
-    <None Include="SolutionItems\README.md" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
@@ -175,9 +173,8 @@
     </Content>
     <Content Include="NativeBinaries\x86\git2-91fa31f.pdb" />
     <Content Include="Resources\Package.ico" />
-    <Content Include="SolutionItems\.gitignore" />
-    <Resource Include="SolutionItems\screenshot.jpg" />
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <UseCodebase>true</UseCodebase>
   </PropertyGroup>
