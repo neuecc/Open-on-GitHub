@@ -34,7 +34,7 @@ namespace OpenOnGitHub
             switch (urlType)
             {
                 case GitHubUrlType.CurrentBranch:
-                    return repository.Head.TrackedBranch.Name.Replace("origin/", "");
+                    return repository.Head.Name.Replace("origin/", "");
                 case GitHubUrlType.CurrentRevision:
                     return repository.Commits.First().Id.Sha;
                 case GitHubUrlType.Master:
@@ -46,11 +46,11 @@ namespace OpenOnGitHub
         public string BuildGitHubUrl(GitHubUrlType urlType)
         {
             // https://github.com/user/repo.git
-            var remote = repository.Head.Remote;
-            if (remote == null || remote.Url == null) throw new InvalidOperationException("Remote can't found");
+            var originUrl = repository.Config.Get<string>("remote.origin.url");
+            if (originUrl == null) throw new InvalidOperationException("OriginUrl can't found");
 
             // https://github.com/user/repo
-            var urlRoot = remote.Url.Substring(0, remote.Url.Length - 4); // remove .git
+            var urlRoot = originUrl.Value.Substring(0, originUrl.Value.Length - 4); // remove .git
 
             // foo/bar.cs
             var rootDir = new DirectoryInfo(repository.Info.Path).Parent.FullName;

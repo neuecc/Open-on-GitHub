@@ -77,7 +77,7 @@ namespace OpenOnGitHub
             {
                 var exstr = ex.ToString();
                 Debug.Write(exstr);
-                command.Text = "error:" + exstr.Substring(0, Math.Min(exstr.Length, 10));
+                command.Text = "error:" + ex.GetType().Name;
                 command.Enabled = false;
             }
         }
