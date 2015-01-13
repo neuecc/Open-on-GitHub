@@ -8,4 +8,4 @@ Right click on editor, if repository is hosted on GitHub, you can jump to master
 
 Install
 ---
-On Visual Studio Gallery - https://visualstudiogallery.msdn.microsoft.com
+Download from [Visual Studio Gallery - OpenOnGitHub](https://visualstudiogallery.msdn.microsoft.com/79bf2ea3-9e78-4212-b22f-cdcdd75e791d)
