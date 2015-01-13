@@ -5,7 +5,7 @@
 
     <Commands package="guidOpenOnGitHubPkg">
         <Menus>
-            <Menu guid="guidOpenOnGitHubCmdSet" id="SubMenu" priority="0x0100" type="Menu">
+            <Menu guid="guidOpenOnGitHubCmdSet" id="SubMenu" priority="0x1000" type="Menu">
                 <Parent guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" />
                 <Strings>
                     <ButtonText>Open on GitHub</ButtonText>
