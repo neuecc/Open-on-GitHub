@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace OpenOnGitHub
 {
@@ -53,6 +54,9 @@ namespace OpenOnGitHub
             var urlRoot = (originUrl.Value.EndsWith(".git", StringComparison.InvariantCultureIgnoreCase))
                 ? originUrl.Value.Substring(0, originUrl.Value.Length - 4) // remove .git
                 : originUrl.Value;
+
+            // https://user@github.com/user/repo -> https://github.com/user/repo
+            urlRoot = Regex.Replace(urlRoot, "(?<=^https?://)([^@/]+)@", "");
 
             // foo/bar.cs
             var rootDir = new DirectoryInfo(repository.Info.Path).Parent.FullName;
