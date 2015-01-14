@@ -59,8 +59,8 @@ namespace OpenOnGitHub
             urlRoot = Regex.Replace(urlRoot, "(?<=^https?://)([^@/]+)@", "");
 
             // foo/bar.cs
-            var rootDir = new DirectoryInfo(repository.Info.Path).Parent.FullName;
-            var fileIndexPath = targetFullPath.Substring(rootDir.Length + 1).Replace("\\", "/");
+            var rootDir = repository.Info.WorkingDirectory;
+            var fileIndexPath = targetFullPath.Substring(rootDir.Length).Replace("\\", "/");
 
             var repositoryTarget = GetGitHubTargetPath(urlType);
 
@@ -71,7 +71,7 @@ namespace OpenOnGitHub
                                     : string.Format("#L{0}-{1}", selectionLineRange.Item1, selectionLineRange.Item2)
                                 : "";
 
-            var fileUrl = string.Format("{0}/blob/{1}/{2}{3}", urlRoot, repositoryTarget, fileIndexPath, fragment);
+            var fileUrl = string.Format("{0}/blob/{1}/{2}{3}", urlRoot.Trim('/'), repositoryTarget.Trim('/'), fileIndexPath.Trim('/'), fragment);
             return fileUrl;
         }
 
