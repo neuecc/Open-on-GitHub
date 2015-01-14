@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 namespace OpenOnGitHub
 {
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // TODO:versions
+    [InstalledProductRegistration("#110", "#112",  PackageVersion.Version, IconResourceID = 400)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(PackageGuids.guidOpenOnGitHubPkgString)]
     [ProvideAutoLoad(UIContextGuids80.SolutionExists)]
