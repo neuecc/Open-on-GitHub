@@ -4,7 +4,7 @@ Visual Studio Extension for opening files on GitHub.com
 
 ![](screenshot.jpg)
 
-Right click on editor, if repository is hosted on GitHub, you can jump to master/current branch/current revision's blob page.
+Right click on editor, if repository is hosted on GitHub, you can jump to master/current branch/current revision's blob page. If selecting line(single, range) in editor, jump with line number fragment.
 
 Install
 ---
