@@ -14,10 +14,7 @@
         </Menus>
 
         <Groups>
-            <Group guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
-                <!--<Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>-->
-                <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN" />
-            </Group>
+            <Group guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600" />
             <Group guid="guidOpenOnGitHubCmdSet" id="SubMenuGroup" priority="0x0600">
                 <Parent guid="guidOpenOnGitHubCmdSet" id="SubMenu" />
             </Group>
@@ -50,7 +47,56 @@
             </Button>
         </Buttons>
     </Commands>
-
+    <CommandPlacements>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN" />
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="HtmlEditorWindowLibra" id="IDMX_HTML_SOURCE"/>
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="CssEditorWindows2" id="IDMX_CSS_SOURCE"/>
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="JsonEditorWindows" id="IDMX_JSON_SOURCE"/>
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_BASIC" />
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_HTML" />
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_SCRIPT" />
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_ASPX" />
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_ASPX_CODE" />
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_ASAX_CODE" />
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_ASPX_CODE_VB" />
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_ASAX_CODE_VB" />
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_ASMX_CODE" />
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_ASMX_CODE_VB" />
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="CssEditorWindows" id="IDMX_HTM_SOURCE_CSS" />
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="XamlEditorWindows" id="IDMX_XAML_SOURCE_BASIC" />
+        </CommandPlacement>
+    </CommandPlacements>
     <Symbols>
         <GuidSymbol name="guidOpenOnGitHubPkg" value="{465b40b6-311a-4e37-9556-95fced2de9c6}" />
 
@@ -62,6 +108,36 @@
             <IDSymbol name="OpenMaster" value="0x0100" />
             <IDSymbol name="OpenBranch" value="0x0200" />
             <IDSymbol name="OpenRevision" value="0x0300" />
+        </GuidSymbol>
+
+        <!-- List for various editor types -->
+        <GuidSymbol name="HtmlEditorWindowLibra" value="{78F03954-2FB8-4087-8CE7-59D71710B3BB}">
+            <IDSymbol name="IDMX_HTML_SOURCE" value="1"/>
+        </GuidSymbol>
+        <GuidSymbol name="CssEditorWindows2" value="{64DA400E-B4AD-4D67-AA92-4B7ACB01ECD5}">
+            <IDSymbol name="IDMX_CSS_SOURCE" value="0x0002"/>
+        </GuidSymbol>
+        <GuidSymbol name="JsonEditorWindows" value="{F718CA06-CF4F-4A0C-9106-E79E9EE5E7CD}">
+            <IDSymbol name="IDMX_JSON_SOURCE" value="0x0003"/>
+        </GuidSymbol>
+        <GuidSymbol name="HtmlEditorWindows" value="{d7e8c5e1-bdb8-11d0-9c88-0000f8040a53}">
+            <IDSymbol name="IDMX_HTM_SOURCE_BASIC" value="0x32" />
+            <IDSymbol name="IDMX_HTM_SOURCE_HTML" value="0x0033" />
+            <IDSymbol name="IDMX_HTM_SOURCE_SCRIPT" value="0x34" />
+            <IDSymbol name="IDMX_HTM_SOURCE_ASPX" value="0x35" />
+            <IDSymbol name="IDMX_HTM_SOURCE_ASAX" value="0x3B" />
+            <IDSymbol name="IDMX_HTM_SOURCE_ASPX_CODE" value="0x36" />
+            <IDSymbol name="IDMX_HTM_SOURCE_ASAX_CODE" value="0x3C" />
+            <IDSymbol name="IDMX_HTM_SOURCE_ASPX_CODE_VB" value="0x37" />
+            <IDSymbol name="IDMX_HTM_SOURCE_ASAX_CODE_VB" value="0x3D" />
+            <IDSymbol name="IDMX_HTM_SOURCE_ASMX_CODE" value="0x38" />
+            <IDSymbol name="IDMX_HTM_SOURCE_ASMX_CODE_VB" value="0x39" />
+        </GuidSymbol>
+        <GuidSymbol name="CssEditorWindows" value="{A764E896-518D-11D2-9A89-00C04F79EFC3}">
+            <IDSymbol name="IDMX_HTM_SOURCE_CSS" value="0x0102"/>
+        </GuidSymbol>
+        <GuidSymbol name="XamlEditorWindows" value="{4C87B692-1202-46AA-B64C-EF01FAEC53DA}">
+            <IDSymbol name="IDMX_XAML_SOURCE_BASIC" value="0x0103"/>
         </GuidSymbol>
     </Symbols>
 </CommandTable>
