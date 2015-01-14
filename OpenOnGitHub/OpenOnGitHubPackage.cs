@@ -96,8 +96,9 @@ namespace OpenOnGitHub
                     {
                         return;
                     }
+                    var selectionLineRange = GetSelectionLineRange();
                     var type = ToGitHubUrlType(command.CommandID.ID);
-                    var gitHubUrl = git.BuildGitHubUrl(type);
+                    var gitHubUrl = git.BuildGitHubUrl(type, selectionLineRange);
                     System.Diagnostics.Process.Start(gitHubUrl); // open browser
                 }
             }
@@ -132,6 +133,17 @@ namespace OpenOnGitHub
             {
                 return di.Name.ToUpper();
             }
+        }
+
+        Tuple<int, int> GetSelectionLineRange()
+        {
+            var selection = DTE.ActiveDocument.Selection as TextSelection;
+            if (selection == null || selection.IsEmpty)
+            {
+                return null;
+            }
+
+            return Tuple.Create(selection.TopPoint.Line, selection.BottomPoint.Line);
         }
 
         static GitHubUrlType ToGitHubUrlType(int commandId)

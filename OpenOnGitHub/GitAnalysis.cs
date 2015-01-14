@@ -44,7 +44,7 @@ namespace OpenOnGitHub
             }
         }
 
-        public string BuildGitHubUrl(GitHubUrlType urlType)
+        public string BuildGitHubUrl(GitHubUrlType urlType, Tuple<int, int> selectionLineRange)
         {
             // https://github.com/user/repo.git
             var originUrl = repository.Config.Get<string>("remote.origin.url");
@@ -64,7 +64,14 @@ namespace OpenOnGitHub
 
             var repositoryTarget = GetGitHubTargetPath(urlType);
 
-            var fileUrl = string.Format("{0}/blob/{1}/{2}", urlRoot, repositoryTarget, fileIndexPath);
+            // line selection
+            var fragment = (selectionLineRange != null)
+                                ? (selectionLineRange.Item1 == selectionLineRange.Item2)
+                                    ? string.Format("#L{0}", selectionLineRange.Item1)
+                                    : string.Format("#L{0}-{1}", selectionLineRange.Item1, selectionLineRange.Item2)
+                                : "";
+
+            var fileUrl = string.Format("{0}/blob/{1}/{2}{3}", urlRoot, repositoryTarget, fileIndexPath, fragment);
             return fileUrl;
         }
 
