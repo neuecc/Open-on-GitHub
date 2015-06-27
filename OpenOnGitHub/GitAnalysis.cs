@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace OpenOnGitHub
@@ -71,7 +72,7 @@ namespace OpenOnGitHub
                                     : string.Format("#L{0}-{1}", selectionLineRange.Item1, selectionLineRange.Item2)
                                 : "";
 
-            var fileUrl = string.Format("{0}/blob/{1}/{2}{3}", urlRoot.Trim('/'), repositoryTarget.Trim('/'), fileIndexPath.Trim('/'), fragment);
+            var fileUrl = string.Format("{0}/blob/{1}/{2}{3}", urlRoot.Trim('/'), WebUtility.UrlEncode(repositoryTarget.Trim('/')), fileIndexPath.Trim('/'), fragment);
             return fileUrl;
         }
 
