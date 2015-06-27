@@ -56,6 +56,10 @@ namespace OpenOnGitHub
                 ? originUrl.Value.Substring(0, originUrl.Value.Length - 4) // remove .git
                 : originUrl.Value;
 
+            // git@github.com:user/repo -> http://github.com/user/repo
+            if (urlRoot.StartsWith("git@", StringComparison.InvariantCultureIgnoreCase))
+                urlRoot = "http://" + urlRoot.Substring(4).Replace(":", "/");
+
             // https://user@github.com/user/repo -> https://github.com/user/repo
             urlRoot = Regex.Replace(urlRoot, "(?<=^https?://)([^@/]+)@", "");
 
