@@ -57,8 +57,7 @@ namespace OpenOnGitHub
                 : originUrl.Value;
 
             // git@github.com:user/repo -> http://github.com/user/repo
-            if (urlRoot.StartsWith("git@", StringComparison.InvariantCultureIgnoreCase))
-                urlRoot = "http://" + urlRoot.Substring(4).Replace(":", "/");
+            urlRoot = Regex.Replace(urlRoot, "^git@(.+):(.+)/(.+)$", match => "http://" + string.Join("/", match.Groups.OfType<Group>().Skip(1).Select(group => group.Value)), RegexOptions.IgnoreCase);
 
             // https://user@github.com/user/repo -> https://github.com/user/repo
             urlRoot = Regex.Replace(urlRoot, "(?<=^https?://)([^@/]+)@", "");
