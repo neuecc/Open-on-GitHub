@@ -14,7 +14,7 @@ namespace OpenOnGitHub
         CurrentRevision
     }
 
-    public class GitAnalysis : IDisposable
+    public sealed class GitAnalysis : IDisposable
     {
         readonly Repository repository;
         readonly string targetFullPath;
@@ -79,12 +79,23 @@ namespace OpenOnGitHub
             return fileUrl;
         }
 
-        public void Dispose()
+        void Dispose(bool disposing)
         {
             if (repository != null)
             {
                 repository.Dispose();
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~GitAnalysis()
+        {
+            Dispose(false);
         }
     }
 }
