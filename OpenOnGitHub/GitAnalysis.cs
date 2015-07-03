@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace OpenOnGitHub
@@ -55,6 +56,9 @@ namespace OpenOnGitHub
                 ? originUrl.Value.Substring(0, originUrl.Value.Length - 4) // remove .git
                 : originUrl.Value;
 
+            // git@github.com:user/repo -> http://github.com/user/repo
+            urlRoot = Regex.Replace(urlRoot, "^git@(.+):(.+)/(.+)$", match => "http://" + string.Join("/", match.Groups.OfType<Group>().Skip(1).Select(group => group.Value)), RegexOptions.IgnoreCase);
+
             // https://user@github.com/user/repo -> https://github.com/user/repo
             urlRoot = Regex.Replace(urlRoot, "(?<=^https?://)([^@/]+)@", "");
 
@@ -71,7 +75,7 @@ namespace OpenOnGitHub
                                     : string.Format("#L{0}-{1}", selectionLineRange.Item1, selectionLineRange.Item2)
                                 : "";
 
-            var fileUrl = string.Format("{0}/blob/{1}/{2}{3}", urlRoot.Trim('/'), repositoryTarget.Trim('/'), fileIndexPath.Trim('/'), fragment);
+            var fileUrl = string.Format("{0}/blob/{1}/{2}{3}", urlRoot.Trim('/'), WebUtility.UrlEncode(repositoryTarget.Trim('/')), fileIndexPath.Trim('/'), fragment);
             return fileUrl;
         }
 
