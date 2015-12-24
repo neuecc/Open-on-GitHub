@@ -71,7 +71,7 @@ namespace OpenOnGitHub
                     }
                     else
                     {
-                        command.Text = targetPath;
+                        command.Text = git.GetGitHubTargetDescription(type);
                         command.Enabled = true;
                     }
                 }

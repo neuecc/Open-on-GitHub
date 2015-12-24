@@ -45,6 +45,20 @@ namespace OpenOnGitHub
             }
         }
 
+        public string GetGitHubTargetDescription(GitHubUrlType urlType)
+        {
+            switch (urlType)
+            {
+                case GitHubUrlType.CurrentBranch:
+                    return "Branch: " + repository.Head.Name.Replace("origin/", "");
+                case GitHubUrlType.CurrentRevision:
+                    return "Revision: " + repository.Commits.First().Id.ToString(8);
+                case GitHubUrlType.Master:
+                default:
+                    return "master";
+            }
+        }
+
         public string BuildGitHubUrl(GitHubUrlType urlType, Tuple<int, int> selectionLineRange)
         {
             // https://github.com/user/repo.git
