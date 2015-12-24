@@ -39,7 +39,13 @@ namespace OpenOnGitHub
             var mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
             if (mcs != null)
             {
-                foreach (var item in new[] { PackageCommanddIDs.OpenMaster, PackageCommanddIDs.OpenBranch, PackageCommanddIDs.OpenRevision })
+                foreach (var item in new[]
+                {
+                    PackageCommanddIDs.OpenMaster,
+                    PackageCommanddIDs.OpenBranch,
+                    PackageCommanddIDs.OpenRevision,
+                    PackageCommanddIDs.OpenRevisionFull
+                })
                 {
                     var menuCommandID = new CommandID(PackageGuids.guidOpenOnGitHubCmdSet, (int)item);
                     var menuItem = new OleMenuCommand(ExecuteCommand, menuCommandID);
@@ -151,6 +157,7 @@ namespace OpenOnGitHub
             if (commandId == PackageCommanddIDs.OpenMaster) return GitHubUrlType.Master;
             if (commandId == PackageCommanddIDs.OpenBranch) return GitHubUrlType.CurrentBranch;
             if (commandId == PackageCommanddIDs.OpenRevision) return GitHubUrlType.CurrentRevision;
+            if (commandId == PackageCommanddIDs.OpenRevisionFull) return GitHubUrlType.CurrentRevisionFull;
             else return GitHubUrlType.Master;
         }
     }

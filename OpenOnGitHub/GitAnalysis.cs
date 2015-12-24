@@ -11,7 +11,8 @@ namespace OpenOnGitHub
     {
         Master,
         CurrentBranch,
-        CurrentRevision
+        CurrentRevision,
+        CurrentRevisionFull
     }
 
     public sealed class GitAnalysis : IDisposable
@@ -39,6 +40,8 @@ namespace OpenOnGitHub
                     return repository.Head.Name.Replace("origin/", "");
                 case GitHubUrlType.CurrentRevision:
                     return repository.Commits.First().Id.ToString(8);
+                case GitHubUrlType.CurrentRevisionFull:
+                    return repository.Commits.First().Id.Sha;
                 case GitHubUrlType.Master:
                 default:
                     return "master";
@@ -53,6 +56,8 @@ namespace OpenOnGitHub
                     return "Branch: " + repository.Head.Name.Replace("origin/", "");
                 case GitHubUrlType.CurrentRevision:
                     return "Revision: " + repository.Commits.First().Id.ToString(8);
+                case GitHubUrlType.CurrentRevisionFull:
+                    return "Revision: " + repository.Commits.First().Id.ToString(8) + "... (Full ID)";
                 case GitHubUrlType.Master:
                 default:
                     return "master";
