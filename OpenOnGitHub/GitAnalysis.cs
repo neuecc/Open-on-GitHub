@@ -38,7 +38,7 @@ namespace OpenOnGitHub
                 case GitHubUrlType.CurrentBranch:
                     return repository.Head.Name.Replace("origin/", "");
                 case GitHubUrlType.CurrentRevision:
-                    return repository.Commits.First().Id.Sha;
+                    return repository.Commits.First().Id.ToString(8);
                 case GitHubUrlType.Master:
                 default:
                     return "master";
