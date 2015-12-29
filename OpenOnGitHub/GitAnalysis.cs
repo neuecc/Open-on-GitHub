@@ -91,7 +91,7 @@ namespace OpenOnGitHub
             var fragment = (selectionLineRange != null)
                                 ? (selectionLineRange.Item1 == selectionLineRange.Item2)
                                     ? string.Format("#L{0}", selectionLineRange.Item1)
-                                    : string.Format("#L{0}-{1}", selectionLineRange.Item1, selectionLineRange.Item2)
+                                    : string.Format("#L{0}-L{1}", selectionLineRange.Item1, selectionLineRange.Item2)
                                 : "";
 
             var fileUrl = string.Format("{0}/blob/{1}/{2}{3}", urlRoot.Trim('/'), WebUtility.UrlEncode(repositoryTarget.Trim('/')), fileIndexPath.Trim('/'), fragment);
