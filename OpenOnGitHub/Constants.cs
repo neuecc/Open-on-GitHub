@@ -15,5 +15,11 @@ namespace OpenOnGitHub
         public const uint OpenMaster = 0x100;
         public const uint OpenBranch = 0x200;
         public const uint OpenRevision = 0x300;
+        public const uint OpenRevisionFull = 0x400;
     };
+
+    static class PackageVersion
+    {
+        public const string Version = "1.3"; 
+    }
 }

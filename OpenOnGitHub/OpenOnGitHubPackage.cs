@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 namespace OpenOnGitHub
 {
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // TODO:versions
+    [InstalledProductRegistration("#110", "#112",  PackageVersion.Version, IconResourceID = 400)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(PackageGuids.guidOpenOnGitHubPkgString)]
     [ProvideAutoLoad(UIContextGuids80.SolutionExists)]
@@ -39,7 +39,13 @@ namespace OpenOnGitHub
             var mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
             if (mcs != null)
             {
-                foreach (var item in new[] { PackageCommanddIDs.OpenMaster, PackageCommanddIDs.OpenBranch, PackageCommanddIDs.OpenRevision })
+                foreach (var item in new[]
+                {
+                    PackageCommanddIDs.OpenMaster,
+                    PackageCommanddIDs.OpenBranch,
+                    PackageCommanddIDs.OpenRevision,
+                    PackageCommanddIDs.OpenRevisionFull
+                })
                 {
                     var menuCommandID = new CommandID(PackageGuids.guidOpenOnGitHubCmdSet, (int)item);
                     var menuItem = new OleMenuCommand(ExecuteCommand, menuCommandID);
@@ -71,7 +77,7 @@ namespace OpenOnGitHub
                     }
                     else
                     {
-                        command.Text = targetPath;
+                        command.Text = git.GetGitHubTargetDescription(type);
                         command.Enabled = true;
                     }
                 }
@@ -96,8 +102,9 @@ namespace OpenOnGitHub
                     {
                         return;
                     }
+                    var selectionLineRange = GetSelectionLineRange();
                     var type = ToGitHubUrlType(command.CommandID.ID);
-                    var gitHubUrl = git.BuildGitHubUrl(type);
+                    var gitHubUrl = git.BuildGitHubUrl(type, selectionLineRange);
                     System.Diagnostics.Process.Start(gitHubUrl); // open browser
                 }
             }
@@ -134,11 +141,23 @@ namespace OpenOnGitHub
             }
         }
 
+        Tuple<int, int> GetSelectionLineRange()
+        {
+            var selection = DTE.ActiveDocument.Selection as TextSelection;
+            if (selection == null || selection.IsEmpty)
+            {
+                return null;
+            }
+
+            return Tuple.Create(selection.TopPoint.Line, selection.BottomPoint.Line);
+        }
+
         static GitHubUrlType ToGitHubUrlType(int commandId)
         {
             if (commandId == PackageCommanddIDs.OpenMaster) return GitHubUrlType.Master;
             if (commandId == PackageCommanddIDs.OpenBranch) return GitHubUrlType.CurrentBranch;
             if (commandId == PackageCommanddIDs.OpenRevision) return GitHubUrlType.CurrentRevision;
+            if (commandId == PackageCommanddIDs.OpenRevisionFull) return GitHubUrlType.CurrentRevisionFull;
             else return GitHubUrlType.Master;
         }
     }
