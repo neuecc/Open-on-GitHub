@@ -36,8 +36,7 @@ namespace OpenOnGitHub
         {
             base.Initialize();
 
-            var mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
-            if (mcs != null)
+            if (GetService(typeof(IMenuCommandService)) is OleMenuCommandService mcs)
             {
                 foreach (var item in new[]
                 {
@@ -143,8 +142,7 @@ namespace OpenOnGitHub
 
         Tuple<int, int> GetSelectionLineRange()
         {
-            var selection = DTE.ActiveDocument.Selection as TextSelection;
-            if (selection == null || selection.IsEmpty)
+            if (!(DTE.ActiveDocument.Selection is TextSelection selection) || selection.IsEmpty)
             {
                 return null;
             }
