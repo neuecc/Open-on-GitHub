@@ -1,5 +1,6 @@
 ﻿using EnvDTE;
 using EnvDTE80;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
@@ -7,15 +8,17 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace OpenOnGitHub
 {
-    [PackageRegistration(UseManagedResourcesOnly = true)]
+    // change to async package. ref: https://github.com/Microsoft/VSSDK-Extensibility-Samples/tree/master/AsyncPackageMigration
+    [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [InstalledProductRegistration("#110", "#112",  PackageVersion.Version, IconResourceID = 400)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(PackageGuids.guidOpenOnGitHubPkgString)]
-    [ProvideAutoLoad(UIContextGuids80.SolutionExists)]
-    public sealed class OpenOnGitHubPackage : Package
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string, PackageAutoLoadFlags.BackgroundLoad)]
+    public sealed class OpenOnGitHubPackage : AsyncPackage
     {
         private static DTE2 _dte;
 
@@ -23,6 +26,7 @@ namespace OpenOnGitHub
         {
             get
             {
+                ThreadHelper.ThrowIfNotOnUIThread();
                 if (_dte == null)
                 {
                     _dte = ServiceProvider.GlobalProvider.GetService(typeof(DTE)) as DTE2;
@@ -32,11 +36,14 @@ namespace OpenOnGitHub
             }
         }
 
-        protected override void Initialize()
+        protected override async System.Threading.Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            base.Initialize();
+            await base.InitializeAsync(cancellationToken, progress);
 
-            if (GetService(typeof(IMenuCommandService)) is OleMenuCommandService mcs)
+            // Switches to the UI thread in order to consume some services used in command initialization
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
+            if (await GetServiceAsync(typeof(IMenuCommandService)) is OleMenuCommandService mcs)
             {
                 foreach (var item in new[]
                 {
@@ -60,6 +67,7 @@ namespace OpenOnGitHub
             try
             {
                 // TODO:is should avoid create GitAnalysis every call?
+                ThreadHelper.ThrowIfNotOnUIThread();
                 using (var git = new GitAnalysis(GetActiveFilePath()))
                 {
                     if (!git.IsDiscoveredGitRepository)
@@ -95,6 +103,7 @@ namespace OpenOnGitHub
             var command = (OleMenuCommand)sender;
             try
             {
+                ThreadHelper.ThrowIfNotOnUIThread();
                 using (var git = new GitAnalysis(GetActiveFilePath()))
                 {
                     if (!git.IsDiscoveredGitRepository)
@@ -115,6 +124,7 @@ namespace OpenOnGitHub
 
         string GetActiveFilePath()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             // sometimes, DTE.ActiveDocument.Path is ToLower but GitHub can't open lower path.
             // fix proper-casing | http://stackoverflow.com/questions/325931/getting-actual-file-name-with-proper-casing-on-windows-with-net
             var path = GetExactPathName(DTE.ActiveDocument.Path + DTE.ActiveDocument.Name);
@@ -142,6 +152,7 @@ namespace OpenOnGitHub
 
         Tuple<int, int> GetSelectionLineRange()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (!(DTE.ActiveDocument.Selection is TextSelection selection) || selection.IsEmpty)
             {
                 return null;
