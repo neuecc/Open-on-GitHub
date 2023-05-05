@@ -8,7 +8,7 @@
             <Menu guid="guidOpenOnGitHubCmdSet" id="SubMenu" priority="0x1000" type="Menu">
                 <Parent guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" />
                 <Strings>
-                    <ButtonText>Open on GitHub</ButtonText>
+                    <ButtonText>Git Hub</ButtonText>
                 </Strings>
             </Menu>
         </Menus>
@@ -21,41 +21,57 @@
         </Groups>
 
         <Buttons>
-            <Button guid="guidOpenOnGitHubCmdSet" id="OpenMaster" priority="0x0100" type="Button">
+            <Button guid="guidOpenOnGitHubCmdSet" id="OpenMain" priority="0x0100" type="Button">
                 <Parent guid="guidOpenOnGitHubCmdSet" id="SubMenuGroup" />
+                <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>master</ButtonText>
-                    <CommandName>master</CommandName>
+                    <ButtonText>Open Main</ButtonText>
+                    <CommandName>main</CommandName>
                 </Strings>
             </Button>
             <Button guid="guidOpenOnGitHubCmdSet" id="OpenBranch" priority="0x0200" type="Button">
                 <Parent guid="guidOpenOnGitHubCmdSet" id="SubMenuGroup" />
                 <CommandFlag>TextChanges</CommandFlag>
                 <CommandFlag>DynamicVisibility</CommandFlag>
+                <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>branch</ButtonText>
+                    <ButtonText>Open Branch</ButtonText>
                     <CommandName>branch</CommandName>
                 </Strings>
             </Button>
             <Button guid="guidOpenOnGitHubCmdSet" id="OpenRevision" priority="0x0300" type="Button">
                 <Parent guid="guidOpenOnGitHubCmdSet" id="SubMenuGroup" />
                 <CommandFlag>TextChanges</CommandFlag>
+                <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>revision</ButtonText>
+                    <ButtonText>Open Revision</ButtonText>
                     <CommandName>revision</CommandName>
                 </Strings>
             </Button>
             <Button guid="guidOpenOnGitHubCmdSet" id="OpenRevisionFull" priority="0x0400" type="Button">
                 <Parent guid="guidOpenOnGitHubCmdSet" id="SubMenuGroup" />
                 <CommandFlag>TextChanges</CommandFlag>
+                <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>revisionFull</ButtonText>
+                    <ButtonText>Open Revision Full</ButtonText>
                     <CommandName>revisionFull</CommandName>
                 </Strings>
             </Button>
         </Buttons>
     </Commands>
     <CommandPlacements>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_ITEMNODE" />
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="GuidVisualStudioFolderViewContextMenu" id="IDVisualStudioFolderViewContextMenu" />
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE" />
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
+            <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_EZDOCWINTAB" />
+        </CommandPlacement>
         <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
             <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN" />
         </CommandPlacement>
@@ -67,6 +83,9 @@
         </CommandPlacement>
         <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
             <Parent guid="JsonEditorWindows" id="IDMX_JSON_SOURCE"/>
+        </CommandPlacement>
+        <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x06000">
+            <Parent guid="JsonEditorWindows" id="IDMX_JSON_SOURCE_1"/>
         </CommandPlacement>
         <CommandPlacement guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" priority="0x0600">
             <Parent guid="HtmlEditorWindows" id="IDMX_HTM_SOURCE_BASIC" />
@@ -113,7 +132,7 @@
             <IDSymbol name="SubMenuGroup" value="0x1030" />
             <IDSymbol name="SubMenu" value="0x1040" />
             <!-- Command -->
-            <IDSymbol name="OpenMaster" value="0x0100" />
+            <IDSymbol name="OpenMain" value="0x0100" />
             <IDSymbol name="OpenBranch" value="0x0200" />
             <IDSymbol name="OpenRevision" value="0x0300" />
             <IDSymbol name="OpenRevisionFull" value="0x0400" />
@@ -127,6 +146,7 @@
             <IDSymbol name="IDMX_CSS_SOURCE" value="0x0002"/>
         </GuidSymbol>
         <GuidSymbol name="JsonEditorWindows" value="{F718CA06-CF4F-4A0C-9106-E79E9EE5E7CD}">
+            <IDSymbol name="IDMX_JSON_SOURCE_1" value="0x0001"/>
             <IDSymbol name="IDMX_JSON_SOURCE" value="0x0003"/>
         </GuidSymbol>
         <GuidSymbol name="HtmlEditorWindows" value="{d7e8c5e1-bdb8-11d0-9c88-0000f8040a53}">
@@ -148,5 +168,8 @@
         <GuidSymbol name="XamlEditorWindows" value="{4C87B692-1202-46AA-B64C-EF01FAEC53DA}">
             <IDSymbol name="IDMX_XAML_SOURCE_BASIC" value="0x0103"/>
         </GuidSymbol>
+		<GuidSymbol name="GuidVisualStudioFolderViewContextMenu" value="{CFB400F1-5C60-4F3C-856E-180D28DEF0B7}">
+			<IDSymbol name="IDVisualStudioFolderViewContextMenu" value="0x2" />
+		</GuidSymbol>
     </Symbols>
 </CommandTable>
