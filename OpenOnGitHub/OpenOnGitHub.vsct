@@ -23,9 +23,10 @@
         <Buttons>
             <Button guid="guidOpenOnGitHubCmdSet" id="OpenMain" priority="0x0100" type="Button">
                 <Parent guid="guidOpenOnGitHubCmdSet" id="SubMenuGroup" />
+				<CommandFlag>TextChanges</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>Open Main</ButtonText>
+                    <ButtonText>Open main</ButtonText>
                     <CommandName>main</CommandName>
                 </Strings>
             </Button>
@@ -35,7 +36,7 @@
                 <CommandFlag>DynamicVisibility</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>Open Branch</ButtonText>
+                    <ButtonText>Open branch</ButtonText>
                     <CommandName>branch</CommandName>
                 </Strings>
             </Button>
@@ -44,7 +45,7 @@
                 <CommandFlag>TextChanges</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>Open Revision</ButtonText>
+                    <ButtonText>Open revision</ButtonText>
                     <CommandName>revision</CommandName>
                 </Strings>
             </Button>
@@ -53,7 +54,7 @@
                 <CommandFlag>TextChanges</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>Open Revision Full</ButtonText>
+                    <ButtonText>Open revision full</ButtonText>
                     <CommandName>revisionFull</CommandName>
                 </Strings>
             </Button>

@@ -82,9 +82,9 @@ namespace OpenOnGitHub
         {
             return urlType switch
             {
-                GitHubUrlType.CurrentBranch => $"Open Branch: {_innerRepository.Head.FriendlyName.Replace("origin/", "")}",
-                GitHubUrlType.CurrentRevision => $"Open Revision: {_innerRepository.Commits.First().Id.ToString(8)}",
-                GitHubUrlType.CurrentRevisionFull => $"Open Revision: {_innerRepository.Commits.First().Id.ToString(8)}... (Full ID)",
+                GitHubUrlType.CurrentBranch => $"Open branch: {_innerRepository.Head.FriendlyName.Replace("origin/", "")}",
+                GitHubUrlType.CurrentRevision => $"Open revision: {_innerRepository.Commits.First().Id.ToString(8)}",
+                GitHubUrlType.CurrentRevisionFull => $"Open revision: {_innerRepository.Commits.First().Id.ToString(8)}... (Full ID)",
                 _ => $"Open {MainBranchName}"
             };
         }
