@@ -187,7 +187,6 @@
     <Compile Include="Providers\BitBucketUrlProvider.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Providers\GiteaUrlProvider.cs" />
-    <Compile Include="Providers\GithubUrlProvider.cs" />
     <Compile Include="GitHubUrlType.cs" />
     <Compile Include="Providers\GitHubLabUrlProvider.cs" />
     <Compile Include="GitRepository.cs" />
