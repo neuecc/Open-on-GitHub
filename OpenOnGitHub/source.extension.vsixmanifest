@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="465b40b6-311a-4e37-9556-95fced2de9c6" Version="2.0.0" Language="en-US" Publisher="neuecc" />
+        <Identity Id="465b40b6-311a-4e37-9556-95fced2de9c6" Version="2.0.0" Language="en-US" Publisher="neuecc, ycherkes" />
         <DisplayName>Open on GitHub</DisplayName>
-        <Description xml:space="preserve">Visual Studio Extension for opening files on GitHub.com</Description>
+        <Description xml:space="preserve">Extension for opening files on GitHub, GitLab, Gitea, Bitbucket and AzureDevOps (dev.azure.com, visualstudio.com, tfs)</Description>
         <MoreInfo>https://github.com/neuecc/Open-on-GitHub</MoreInfo>
         <Tags>Git, GitHub, GitLab, Gitea, Bitbucket AzureDevOps, Source Control</Tags>
     </Metadata>
@@ -14,9 +14,9 @@
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0, 18.0)">
             <ProductArchitecture>amd64</ProductArchitecture>
         </InstallationTarget>
-		<InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0, 18.0)">
-			<ProductArchitecture>arm64</ProductArchitecture>
-		</InstallationTarget>
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0, 18.0)">
+            <ProductArchitecture>arm64</ProductArchitecture>
+        </InstallationTarget>
     </Installation>
     <Dependencies>
         <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
