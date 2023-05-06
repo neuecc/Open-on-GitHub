@@ -29,11 +29,6 @@ namespace OpenOnGitHub
         private static DTE2 _dte;
         internal static IVsMonitorSelection MonitorSelection { get; private set; }
 
-        private GitRepository _git;
-        private IGitUrlProvider _provider;
-        private IMenuCommandService _menuCommandService;
-        private readonly List<OleMenuCommand> _commands = new();
-
         private static readonly IGitUrlProvider AzureDevOpsUrlProvider = new AzureDevOpsUrlProvider();
         private static readonly IGitUrlProvider GitHubLabUrlProvider = new GitHubLabUrlProvider();
         private static readonly Dictionary<string, IGitUrlProvider> UrlProviders = new()
@@ -46,6 +41,11 @@ namespace OpenOnGitHub
             { "gitea.io", new GiteaUrlProvider() },
             { "bitbucket.org", new BitBucketUrlProvider() }
         };
+
+        private GitRepository _git;
+        private IGitUrlProvider _provider;
+        private IMenuCommandService _menuCommandService;
+        private readonly List<OleMenuCommand> _commands = new();
 
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
@@ -115,8 +115,7 @@ namespace OpenOnGitHub
             }
             catch (Exception ex)
             {
-                var exstr = ex.ToString();
-                Debug.Write(exstr);
+                Debug.Write(ex);
                 command.Text = "error:" + ex.GetType().Name;
                 command.Enabled = false;
             }
@@ -175,12 +174,18 @@ namespace OpenOnGitHub
                 Debug.Write(ex);
             }
         }
+
+        /// <summary>
+        /// Checks if the menu was opened from the document
+        /// </summary>
+        /// <returns>true when the context menu was opened on the document or document tab,
+        /// otherwise the menu was opened from the Solution Explorer</returns>
         private static bool IsDocumentContext()
         {
             MonitorSelection.GetCurrentElementValue((uint)VSConstants.VSSELELEMID.SEID_WindowFrame, out var pvarValue);
 
-            return pvarValue is IVsWindowFrame frame1 &&
-                   ErrorHandler.Succeeded(frame1.GetProperty((int)__VSFPROPID.VSFPROPID_Type, out var frameType)) &&
+            return pvarValue is IVsWindowFrame frame &&
+                   ErrorHandler.Succeeded(frame.GetProperty((int)__VSFPROPID.VSFPROPID_Type, out var frameType)) &&
                    (int)frameType == (int)__WindowFrameTypeFlags.WINDOWFRAMETYPE_Document;
         }
 

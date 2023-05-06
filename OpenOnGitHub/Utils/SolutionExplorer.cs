@@ -4,10 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
-using static OpenOnGitHub.OpenOnGitHubPackage;
 
 namespace OpenOnGitHub.Utils
 {
+    // DTE.SelectedItems returns null when the solution was opened as a folder
+    // This class always returns selected items in the Solution Explorer regardless of Solution or Folder open mode.
     public static class SolutionExplorer
     {
         public static List<string> GetSelectedFiles()
@@ -18,34 +19,35 @@ namespace OpenOnGitHub.Utils
             {
                 var files = new List<string>();
 
-                if (MonitorSelection != null &&
-                     MonitorSelection.GetCurrentSelection(out hierarchyPtr, out var itemid, out var multiSelect, out containerPtr) == VSConstants.S_OK)
+                if (OpenOnGitHubPackage.MonitorSelection?.GetCurrentSelection(out hierarchyPtr, out var itemid, out var multiSelect, out containerPtr) != VSConstants.S_OK)
                 {
-                    if (multiSelect != null)
+                    return files;
+                }
+
+                if (multiSelect != null)
+                {
+                    if (multiSelect.GetSelectionInfo(out var numberOfSelectedItems, out _) == VSConstants.S_OK &&
+                        numberOfSelectedItems == 2)
                     {
-                        if (multiSelect.GetSelectionInfo(out var numberOfSelectedItems, out _) == VSConstants.S_OK &&
-                            numberOfSelectedItems == 2)
+                        var vsItemSelections = new VSITEMSELECTION[numberOfSelectedItems];
+                        if (multiSelect.GetSelectedItems(0, numberOfSelectedItems, vsItemSelections) == VSConstants.S_OK)
                         {
-                            var vsItemSelections = new VSITEMSELECTION[numberOfSelectedItems];
-                            if (multiSelect.GetSelectedItems(0, numberOfSelectedItems, vsItemSelections) == VSConstants.S_OK)
+                            foreach (var selection in vsItemSelections)
                             {
-                                foreach (var selection in vsItemSelections)
+                                if (TryGetFile(selection.pHier, selection.itemid, out var file))
                                 {
-                                    if (TryGetFile(selection.pHier, selection.itemid, out var file))
-                                    {
-                                        files.Add(file);
-                                    }
+                                    files.Add(file);
                                 }
                             }
                         }
                     }
-                    else if (itemid != VSConstants.VSCOOKIE_NIL &&
-                            hierarchyPtr != IntPtr.Zero &&
-                            Marshal.GetObjectForIUnknown(hierarchyPtr) is IVsHierarchy hierarchy &&
-                            TryGetFile(hierarchy, itemid, out var file))
-                    {
-                        files.Add(file);
-                    }
+                }
+                else if (itemid != VSConstants.VSCOOKIE_NIL &&
+                         hierarchyPtr != IntPtr.Zero &&
+                         Marshal.GetObjectForIUnknown(hierarchyPtr) is IVsHierarchy hierarchy &&
+                         TryGetFile(hierarchy, itemid, out var file))
+                {
+                    files.Add(file);
                 }
 
                 return files;

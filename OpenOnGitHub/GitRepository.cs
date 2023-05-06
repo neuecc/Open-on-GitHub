@@ -21,9 +21,7 @@ namespace OpenOnGitHub
             if (repositoryPath != null)
             {
                 Initialize(repositoryPath);
-                return;
             }
-            GC.SuppressFinalize(this);
         }
 
         private void Initialize(string repositoryPath)
