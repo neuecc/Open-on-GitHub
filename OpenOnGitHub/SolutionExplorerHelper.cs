@@ -5,11 +5,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace OpenOnGitHub.Utils
+namespace OpenOnGitHub
 {
-    public static class SolutionExplorer
+    public class SolutionExplorerHelper
     {
-        public static List<string> GetSelectedFiles()
+        private readonly IVsMonitorSelection _monitorSelection;
+
+        public SolutionExplorerHelper(IVsMonitorSelection monitorSelection)
+        {
+            _monitorSelection = monitorSelection ?? throw new ArgumentNullException(nameof(monitorSelection));
+        }
+
+        public List<string> GetSelectedFiles()
         {
             var hierarchyPtr = IntPtr.Zero;
             var containerPtr = IntPtr.Zero;
@@ -17,7 +24,7 @@ namespace OpenOnGitHub.Utils
             {
                 var files = new List<string>();
 
-                if (OpenOnGitHubPackage.MonitorSelection?.GetCurrentSelection(out hierarchyPtr, out var itemid, out var multiSelect, out containerPtr) != VSConstants.S_OK)
+                if (_monitorSelection.GetCurrentSelection(out hierarchyPtr, out var itemid, out var multiSelect, out containerPtr) != VSConstants.S_OK)
                 {
                     return files;
                 }

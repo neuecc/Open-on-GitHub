@@ -5,7 +5,6 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using OpenOnGitHub.Providers;
-using OpenOnGitHub.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
@@ -28,7 +27,6 @@ namespace OpenOnGitHub
     public sealed class OpenOnGitHubPackage : AsyncPackage
     {
         private static DTE2 _dte;
-        internal static IVsMonitorSelection MonitorSelection { get; private set; }
 
         private static readonly IGitUrlProvider AzureDevOpsUrlProvider = new AzureDevOpsUrlProvider();
         private static readonly IGitUrlProvider GitHubLabUrlProvider = new GitHubLabUrlProvider();
@@ -46,6 +44,7 @@ namespace OpenOnGitHub
         private GitRepository _git;
         private IGitUrlProvider _provider;
         private IMenuCommandService _menuCommandService;
+        private SolutionExplorerHelper _solutionExplorer;
 
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
@@ -55,11 +54,10 @@ namespace OpenOnGitHub
             await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             _dte = (DTE2)GetGlobalService(typeof(DTE));
-            MonitorSelection = (IVsMonitorSelection)await GetServiceAsync(typeof(IVsMonitorSelection));
+            _solutionExplorer = new SolutionExplorerHelper((IVsMonitorSelection)await GetServiceAsync(typeof(IVsMonitorSelection)));
             _menuCommandService = (OleMenuCommandService)await GetServiceAsync(typeof(IMenuCommandService));
 
             Assumes.NotNull(_dte);
-            Assumes.NotNull(MonitorSelection);
             Assumes.NotNull(_menuCommandService);
 
             foreach (var commandContextGuid in PackageGuids.EnumerateCmdSets())
@@ -192,7 +190,7 @@ namespace OpenOnGitHub
             };
         }
 
-        private static string GetActiveFilePath(CommandContext context)
+        private string GetActiveFilePath(CommandContext context)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -200,7 +198,7 @@ namespace OpenOnGitHub
 
             if (context == CommandContext.SolutionExplorer)
             {
-                var selectedFiles = SolutionExplorer.GetSelectedFiles();
+                var selectedFiles = _solutionExplorer.GetSelectedFiles();
 
                 if (selectedFiles.Count != 1)
                 {

@@ -197,7 +197,7 @@
     <Compile Include="SelectedRange.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Providers\AzureDevOpsUrlProvider.cs" />
-    <Compile Include="Utils\SolutionExplorer.cs" />
+    <Compile Include="SolutionExplorerHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="VSPackage.resx">
