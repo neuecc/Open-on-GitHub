@@ -275,11 +275,4 @@ namespace OpenOnGitHub
             base.Dispose(disposing);
         }
     }
-
-    internal enum CommandContext
-    {
-        DocumentEditor,
-        DocumentTab,
-        SolutionExplorer
-    }
 }

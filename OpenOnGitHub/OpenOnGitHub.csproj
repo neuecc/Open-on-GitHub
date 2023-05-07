@@ -184,6 +184,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommandContext.cs" />
     <Compile Include="Providers\BitBucketUrlProvider.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Providers\GiteaUrlProvider.cs" />
