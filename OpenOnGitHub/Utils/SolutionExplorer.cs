@@ -7,8 +7,6 @@ using System.Runtime.InteropServices;
 
 namespace OpenOnGitHub.Utils
 {
-    // DTE.SelectedItems returns null when the solution was opened as a folder
-    // This class always returns selected items in the Solution Explorer regardless of Solution or Folder open mode.
     public static class SolutionExplorer
     {
         public static List<string> GetSelectedFiles()
