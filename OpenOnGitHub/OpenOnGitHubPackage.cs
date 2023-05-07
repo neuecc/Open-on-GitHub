@@ -22,7 +22,7 @@ namespace OpenOnGitHub
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [InstalledProductRegistration("#110", "#112", PackageVersion.Version, IconResourceID = 400)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [Guid(PackageGuids.guidOpenOnGitHubPkgString)]
+    [Guid(PackageGuids.GuidOpenOnGitHubPkgString)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.FolderOpened_string, PackageAutoLoadFlags.BackgroundLoad)]
     public sealed class OpenOnGitHubPackage : AsyncPackage
@@ -185,9 +185,9 @@ namespace OpenOnGitHub
         {
             return command.CommandID.Guid.ToString() switch
             {
-                PackageGuids.guidDocumentTabOpenOnGitHubCmdSetString => CommandContext.DocumentTab,
-                PackageGuids.guidOpenOnGitHubCmdSetString => CommandContext.DocumentEditor,
-                PackageGuids.guidSolutionExplorerOpenOnGitHubCmdSetString => CommandContext.SolutionExplorer,
+                PackageGuids.GuidDocumentTabOpenOnGitHubCmdSetString => CommandContext.DocumentTab,
+                PackageGuids.GuidOpenOnGitHubCmdSetString => CommandContext.DocumentEditor,
+                PackageGuids.GuidSolutionExplorerOpenOnGitHubCmdSetString => CommandContext.SolutionExplorer,
                 _ => CommandContext.DocumentEditor
             };
         }
