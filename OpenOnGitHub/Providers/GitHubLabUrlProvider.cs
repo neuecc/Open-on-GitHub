@@ -21,7 +21,7 @@ internal sealed class GitHubLabUrlProvider : IGitUrlProvider
 
         if (selectedRange.TopLine != selectedRange.BottomLine)
         {
-            uri += "-" + selectedRange.BottomLine.ToString(CultureInfo.InvariantCulture);
+            uri += "-L" + selectedRange.BottomLine.ToString(CultureInfo.InvariantCulture);
         }
 
         return uri;
