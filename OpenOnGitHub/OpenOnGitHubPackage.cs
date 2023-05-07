@@ -1,5 +1,6 @@
 ﻿using EnvDTE;
 using EnvDTE80;
+using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -45,7 +46,6 @@ namespace OpenOnGitHub
         private GitRepository _git;
         private IGitUrlProvider _provider;
         private IMenuCommandService _menuCommandService;
-        private readonly List<OleMenuCommand> _commands = new();
 
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
@@ -56,16 +56,20 @@ namespace OpenOnGitHub
 
             _dte = (DTE2)GetGlobalService(typeof(DTE));
             MonitorSelection = (IVsMonitorSelection)await GetServiceAsync(typeof(IVsMonitorSelection));
-            _menuCommandService = (IMenuCommandService)await GetServiceAsync(typeof(IMenuCommandService));
+            _menuCommandService = (OleMenuCommandService)await GetServiceAsync(typeof(IMenuCommandService));
 
-            foreach (var commandId in PackageCommandIDs.Enumerate())
+            Assumes.NotNull(_dte);
+            Assumes.NotNull(MonitorSelection);
+            Assumes.NotNull(_menuCommandService);
+
+            foreach (var commandContextGuid in PackageGuids.EnumerateCmdSets())
             {
-                var menuCommandId = new CommandID(PackageGuids.guidOpenOnGitHubCmdSet, commandId);
-                var menuCommand = new OleMenuCommand(ExecuteCommand, menuCommandId);
-                menuCommand.BeforeQueryStatus += CheckCommandAvailability;
-                menuCommand.Enabled = false;
-                _menuCommandService.AddCommand(menuCommand);
-                _commands.Add(menuCommand);
+                foreach (var commandId in PackageCommandIDs.Enumerate())
+                {
+                    var menuCommandId = new CommandID(commandContextGuid, commandId);
+                    var menuCommand = new OleMenuCommand(ExecuteCommand, null, CheckCommandAvailability, menuCommandId);
+                    _menuCommandService.AddCommand(menuCommand);
+                }
             }
         }
 
@@ -77,7 +81,8 @@ namespace OpenOnGitHub
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
-                var activeFilePath = GetActiveFilePath();
+                var context = GetCommandContext(command);
+                var activeFilePath = GetActiveFilePath(context);
 
                 if (string.IsNullOrEmpty(activeFilePath))
                 {
@@ -162,9 +167,10 @@ namespace OpenOnGitHub
                     return;
                 }
 
+                var context = GetCommandContext(command);
                 var urlType = ToGitHubUrlType(command.CommandID.ID);
-                var activeFilePath = GetActiveFilePath();
-                var textSelection = GetTextSelection();
+                var activeFilePath = GetActiveFilePath(context);
+                var textSelection = GetTextSelection(context);
                 var gitHubUrl = _provider.GetUrl(_git, activeFilePath, urlType, textSelection);
 
                 Process.Start(gitHubUrl)?.Dispose();
@@ -175,31 +181,24 @@ namespace OpenOnGitHub
             }
         }
 
-        /// <summary>
-        /// Checks if the menu was opened from the document
-        /// </summary>
-        /// <returns>true when the context menu was opened on the document or document tab,
-        /// otherwise the menu was opened from the Solution Explorer</returns>
-        private static bool IsDocumentContext()
+        private static CommandContext GetCommandContext(MenuCommand command)
         {
-            MonitorSelection.GetCurrentElementValue((uint)VSConstants.VSSELELEMID.SEID_WindowFrame, out var pvarValue);
-
-            return pvarValue is IVsWindowFrame frame &&
-                   ErrorHandler.Succeeded(frame.GetProperty((int)__VSFPROPID.VSFPROPID_Type, out var frameType)) &&
-                   (int)frameType == (int)__WindowFrameTypeFlags.WINDOWFRAMETYPE_Document;
+            return command.CommandID.Guid.ToString() switch
+            {
+                PackageGuids.guidDocumentTabOpenOnGitHubCmdSetString => CommandContext.DocumentTab,
+                PackageGuids.guidOpenOnGitHubCmdSetString => CommandContext.DocumentEditor,
+                PackageGuids.guidSolutionExplorerOpenOnGitHubCmdSetString => CommandContext.SolutionExplorer,
+                _ => CommandContext.DocumentEditor
+            };
         }
 
-        private static string GetActiveFilePath()
+        private static string GetActiveFilePath(CommandContext context)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             string fileName;
 
-            if (IsDocumentContext())
-            {
-                fileName = $"{_dte.ActiveDocument.Path}{_dte.ActiveDocument.Name}";
-            }
-            else
+            if (context == CommandContext.SolutionExplorer)
             {
                 var selectedFiles = SolutionExplorer.GetSelectedFiles();
 
@@ -207,7 +206,12 @@ namespace OpenOnGitHub
                 {
                     return string.Empty;
                 }
+
                 fileName = selectedFiles[0];
+            }
+            else
+            {
+                fileName = $"{_dte.ActiveDocument.Path}{_dte.ActiveDocument.Name}";
             }
 
             var path = GetExactPathName(fileName);
@@ -236,11 +240,11 @@ namespace OpenOnGitHub
             return exactPathName;
         }
 
-        private static SelectedRange GetTextSelection()
+        private static SelectedRange GetTextSelection(CommandContext context)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (!IsDocumentContext() ||
+            if (context != CommandContext.DocumentEditor ||
                 _dte.ActiveDocument?.Selection is not TextSelection selection ||
                 selection.IsEmpty)
             {
@@ -267,17 +271,15 @@ namespace OpenOnGitHub
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                foreach (var command in _commands)
-                {
-                    command.BeforeQueryStatus -= CheckCommandAvailability;
-                    _menuCommandService.RemoveCommand(command);
-                }
-                _commands.Clear();
-            }
             _git?.Dispose();
             base.Dispose(disposing);
         }
+    }
+
+    internal enum CommandContext
+    {
+        DocumentEditor,
+        DocumentTab,
+        SolutionExplorer
     }
 }
