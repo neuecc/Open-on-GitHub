@@ -137,11 +137,17 @@ namespace OpenOnGitHub
             if (!UrlProviders.TryGetValue(domain, out var provider) &&
                 !UrlProviders.TryGetValue(host, out provider))
             {
+                // private server url such like https://tfs.contoso.com:8080/tfs/Project.
                 if (repositoryUri.Port == 8080
                     && repositoryUri.Segments.Length >= 5
                     && string.Equals(repositoryUri.Segments[1], "tfs/", StringComparison.Ordinal))
                 {
                     provider = UrlProviders["tfs"];
+                }
+                // https://gitlab.contoso.com
+                else if (urlDomainParts[0] == "gitlab")
+                {
+                    provider = UrlProviders["gitlab.com"];
                 }
             }
 
