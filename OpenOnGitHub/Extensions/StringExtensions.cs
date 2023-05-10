@@ -12,6 +12,11 @@ namespace OpenOnGitHub.Extensions
         /// </summary>
         public static bool IsSubPathOf(this string path, string baseDirPath)
         {
+            if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(baseDirPath))
+            {
+                return false;
+            }
+
             var normalizedPath = Path.GetFullPath(path.Replace('/', '\\')
                 .WithEnding("\\"));
 

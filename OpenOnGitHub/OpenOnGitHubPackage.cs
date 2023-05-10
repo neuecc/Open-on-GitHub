@@ -96,13 +96,15 @@ namespace OpenOnGitHub
                     _provider = GetGitProvider();
                 }
 
+                var type = ToGitHubUrlType(command.CommandID.ID);
+
                 if (!_git.IsDiscoveredGitRepository)
                 {
                     command.Enabled = false;
+                    command.Text = _git.GetInitialGitHubTargetDescription(type);
                     return;
                 }
 
-                var type = ToGitHubUrlType(command.CommandID.ID);
                 var target = _git.GetGitHubTargetPath(type);
 
                 if (type == GitHubUrlType.CurrentBranch && target == _git.MainBranchName)
@@ -126,6 +128,11 @@ namespace OpenOnGitHub
 
         private IGitUrlProvider GetGitProvider()
         {
+            if (!_git.IsDiscoveredGitRepository)
+            {
+                return null;
+            }
+
             var repositoryUri = new Uri(_git.UrlRoot);
             var host = repositoryUri.Host;
             var urlDomainParts = host.Split('.');

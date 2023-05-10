@@ -76,6 +76,17 @@ namespace OpenOnGitHub
             };
         }
 
+        public string GetInitialGitHubTargetDescription(GitHubUrlType urlType)
+        {
+            return urlType switch
+            {
+                GitHubUrlType.CurrentBranch => "Open branch",
+                GitHubUrlType.CurrentRevision => "Open revision",
+                GitHubUrlType.CurrentRevisionFull => "Open revision full",
+                _ => "Open main"
+            };
+        }
+
         public string GetGitHubTargetDescription(GitHubUrlType urlType)
         {
             return urlType switch
