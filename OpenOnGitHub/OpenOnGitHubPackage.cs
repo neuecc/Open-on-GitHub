@@ -32,7 +32,6 @@ namespace OpenOnGitHub
         private static readonly IGitUrlProvider GitHubLabUrlProvider = new GitHubLabUrlProvider();
         private static readonly Dictionary<string, IGitUrlProvider> UrlProviders = new()
         {
-            { "tfs", AzureDevOpsUrlProvider },
             { "dev.azure.com", AzureDevOpsUrlProvider },
             { "visualstudio.com", AzureDevOpsUrlProvider },
             { "github.com", GitHubLabUrlProvider },
@@ -148,12 +147,12 @@ namespace OpenOnGitHub
                     && repositoryUri.Segments.Length >= 5
                     && string.Equals(repositoryUri.Segments[1], "tfs/", StringComparison.Ordinal))
                 {
-                    provider = UrlProviders["tfs"];
+                    provider = AzureDevOpsUrlProvider;
                 }
                 // https://gitlab.contoso.com
                 else if (urlDomainParts[0] == "gitlab")
                 {
-                    provider = UrlProviders["gitlab.com"];
+                    provider = GitHubLabUrlProvider;
                 }
             }
 
