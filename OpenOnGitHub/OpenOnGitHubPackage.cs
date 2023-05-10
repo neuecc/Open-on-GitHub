@@ -141,8 +141,7 @@ namespace OpenOnGitHub
                 ? urlDomainParts[urlDomainParts.Length - 2] + "." + urlDomainParts[urlDomainParts.Length - 1]
                 : host;
 
-            if (!UrlProviders.TryGetValue(domain, out var provider) &&
-                !UrlProviders.TryGetValue(host, out provider))
+            if (!UrlProviders.TryGetValue(domain, out var provider))
             {
                 // private server url such like https://tfs.contoso.com:8080/tfs/Project.
                 if (repositoryUri.Port == 8080
