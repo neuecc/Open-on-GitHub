@@ -8,19 +8,19 @@
             <Menu guid="guidOpenOnGitHubCmdSet" id="SubMenu" priority="0x1000" type="Menu">
                 <Parent guid="guidOpenOnGitHubCmdSet" id="ContextMenuGroup" />
                 <Strings>
-                    <ButtonText>Git Hub</ButtonText>
+                    <ButtonText>Open on GitHub</ButtonText>
                 </Strings>
             </Menu>
             <Menu guid="guidDocumentTabOpenOnGitHubCmdSet" id="SubMenu" priority="0x1000" type="Menu">
                 <Parent guid="guidDocumentTabOpenOnGitHubCmdSet" id="ContextMenuGroup" />
                 <Strings>
-                    <ButtonText>Git Hub</ButtonText>
+                    <ButtonText>Open on GitHub</ButtonText>
                 </Strings>
             </Menu>
             <Menu guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="SubMenu" priority="0x1000" type="Menu">
                 <Parent guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="ContextMenuGroup" />
                 <Strings>
-                    <ButtonText>Git Hub</ButtonText>
+                    <ButtonText>Open on GitHub</ButtonText>
                 </Strings>
             </Menu>
         </Menus>

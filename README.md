@@ -1,6 +1,6 @@
 Open on GitHub
 ===
-Visual Studio Extension for opening files on GitHub.com
+Visual Studio Extension for opening files on GitHub, GitLab, Gitea, Bitbucket and AzureDevOps (dev.azure.com, visualstudio.com, tfs)
 
 ![](screenshot.jpg)
 
