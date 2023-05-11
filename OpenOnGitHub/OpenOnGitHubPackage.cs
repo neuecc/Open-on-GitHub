@@ -1,101 +1,167 @@
 ﻿using EnvDTE;
 using EnvDTE80;
+using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using OpenOnGitHub.Providers;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Process = System.Diagnostics.Process;
+using Task = System.Threading.Tasks.Task;
 
 namespace OpenOnGitHub
 {
-    // change to async package. ref: https://github.com/Microsoft/VSSDK-Extensibility-Samples/tree/master/AsyncPackageMigration
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-    [InstalledProductRegistration("#110", "#112",  PackageVersion.Version, IconResourceID = 400)]
+    [InstalledProductRegistration("#110", "#112", PackageVersion.Version, IconResourceID = 400)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [Guid(PackageGuids.guidOpenOnGitHubPkgString)]
-    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string, PackageAutoLoadFlags.BackgroundLoad)]
+    [Guid(PackageGuids.GuidOpenOnGitHubPkgString)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string, PackageAutoLoadFlags.BackgroundLoad)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.FolderOpened_string, PackageAutoLoadFlags.BackgroundLoad)]
     public sealed class OpenOnGitHubPackage : AsyncPackage
     {
         private static DTE2 _dte;
 
-        internal static DTE2 DTE
+        private static readonly IGitUrlProvider AzureDevOpsUrlProvider = new AzureDevOpsUrlProvider();
+        private static readonly IGitUrlProvider GitHubLabUrlProvider = new GitHubLabUrlProvider();
+        private static readonly Dictionary<string, IGitUrlProvider> UrlProviders = new()
         {
-            get
-            {
-                ThreadHelper.ThrowIfNotOnUIThread();
-                if (_dte == null)
-                {
-                    _dte = ServiceProvider.GlobalProvider.GetService(typeof(DTE)) as DTE2;
-                }
+            { "dev.azure.com", AzureDevOpsUrlProvider },
+            { "visualstudio.com", AzureDevOpsUrlProvider },
+            { "github.com", GitHubLabUrlProvider },
+            { "gitlab.com", GitHubLabUrlProvider },
+            { "gitea.io", new GiteaUrlProvider() },
+            { "bitbucket.org", new BitBucketUrlProvider() }
+        };
 
-                return _dte;
-            }
-        }
+        private GitRepository _git;
+        private IGitUrlProvider _provider;
+        private IMenuCommandService _menuCommandService;
+        private SolutionExplorerHelper _solutionExplorer;
 
-        protected override async System.Threading.Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
+        protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
             await base.InitializeAsync(cancellationToken, progress);
 
             // Switches to the UI thread in order to consume some services used in command initialization
             await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
-            if (await GetServiceAsync(typeof(IMenuCommandService)) is OleMenuCommandService mcs)
+            _dte = (DTE2)GetGlobalService(typeof(DTE));
+            _solutionExplorer = new SolutionExplorerHelper((IVsMonitorSelection)await GetServiceAsync(typeof(IVsMonitorSelection)));
+            _menuCommandService = (OleMenuCommandService)await GetServiceAsync(typeof(IMenuCommandService));
+
+            Assumes.NotNull(_dte);
+            Assumes.NotNull(_menuCommandService);
+
+            foreach (var commandContextGuid in PackageGuids.EnumerateCmdSets())
             {
-                foreach (var item in new[]
+                foreach (var commandId in PackageCommandIDs.Enumerate())
                 {
-                    PackageCommanddIDs.OpenMaster,
-                    PackageCommanddIDs.OpenBranch,
-                    PackageCommanddIDs.OpenRevision,
-                    PackageCommanddIDs.OpenRevisionFull
-                })
-                {
-                    var menuCommandID = new CommandID(PackageGuids.guidOpenOnGitHubCmdSet, (int)item);
-                    var menuItem = new OleMenuCommand(ExecuteCommand, menuCommandID);
-                    menuItem.BeforeQueryStatus += MenuItem_BeforeQueryStatus;
-                    mcs.AddCommand(menuItem);
+                    var menuCommandId = new CommandID(commandContextGuid, commandId);
+                    var menuCommand = new OleMenuCommand(ExecuteCommand, null, CheckCommandAvailability, menuCommandId);
+                    _menuCommandService.AddCommand(menuCommand);
                 }
             }
         }
 
-        private void MenuItem_BeforeQueryStatus(object sender, EventArgs e)
+        private void CheckCommandAvailability(object sender, EventArgs e)
         {
             var command = (OleMenuCommand)sender;
+
             try
             {
-                // TODO:is should avoid create GitAnalysis every call?
                 ThreadHelper.ThrowIfNotOnUIThread();
-                using (var git = new GitAnalysis(GetActiveFilePath()))
-                {
-                    if (!git.IsDiscoveredGitRepository)
-                    {
-                        command.Enabled = false;
-                        return;
-                    }
 
-                    var type = ToGitHubUrlType(command.CommandID.ID);
-                    var targetPath = git.GetGitHubTargetPath(type);
-                    if (type == GitHubUrlType.CurrentBranch && targetPath == "master")
-                    {
-                        command.Visible = false;
-                    }
-                    else
-                    {
-                        command.Text = git.GetGitHubTargetDescription(type);
-                        command.Enabled = true;
-                    }
+                var context = GetCommandContext(command);
+                var activeFilePath = GetActiveFilePath(context);
+
+                if (string.IsNullOrEmpty(activeFilePath))
+                {
+                    command.Enabled = false;
+                    return;
+                }
+
+                if (_git?.IsInsideRepositoryFolder(activeFilePath) != true)
+                {
+                    _git?.Dispose();
+                    _git = new GitRepository(activeFilePath);
+
+                    _provider = GetGitProvider();
+                }
+
+                var type = ToGitHubUrlType(command.CommandID.ID);
+
+                if (!_git.IsDiscoveredGitRepository)
+                {
+                    command.Enabled = false;
+                    command.Text = _git.GetInitialGitHubTargetDescription(type);
+                    return;
+                }
+
+                var target = _git.GetGitHubTargetPath(type);
+
+                if (type == GitHubUrlType.CurrentBranch && target == _git.MainBranchName)
+                {
+                    command.Visible = false;
+                }
+                else
+                {
+                    command.Text = _git.GetGitHubTargetDescription(type);
+                    command.Enabled = _provider.IsUrlTypeAvailable(type);
+                    command.Visible = true;
                 }
             }
             catch (Exception ex)
             {
-                var exstr = ex.ToString();
-                Debug.Write(exstr);
+                Debug.Write(ex);
                 command.Text = "error:" + ex.GetType().Name;
                 command.Enabled = false;
             }
+        }
+
+        private IGitUrlProvider GetGitProvider()
+        {
+            if (!_git.IsDiscoveredGitRepository)
+            {
+                return null;
+            }
+
+            var repositoryUri = new Uri(_git.UrlRoot);
+            var host = repositoryUri.Host;
+            var urlDomainParts = host.Split('.');
+
+            var domain = urlDomainParts.Length > 2
+                ? urlDomainParts[urlDomainParts.Length - 2] + "." + urlDomainParts[urlDomainParts.Length - 1]
+                : host;
+
+            if (!UrlProviders.TryGetValue(domain, out var provider))
+            {
+                // private server url such like https://tfs.contoso.com:8080/tfs/Project.
+                if (repositoryUri.Port == 8080
+                    && repositoryUri.Segments.Length >= 5
+                    && string.Equals(repositoryUri.Segments[1], "tfs/", StringComparison.Ordinal))
+                {
+                    provider = AzureDevOpsUrlProvider;
+                }
+                // https://gitlab.contoso.com
+                else if (urlDomainParts[0] == "gitlab")
+                {
+                    provider = GitHubLabUrlProvider;
+                }
+            }
+
+            if (provider == null)
+            {
+                throw new InvalidOperationException($"Unknown repository provider: {repositoryUri}");
+            }
+
+            return provider;
         }
 
         private void ExecuteCommand(object sender, EventArgs e)
@@ -104,70 +170,118 @@ namespace OpenOnGitHub
             try
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
-                using (var git = new GitAnalysis(GetActiveFilePath()))
+                if (!_git.IsDiscoveredGitRepository)
                 {
-                    if (!git.IsDiscoveredGitRepository)
-                    {
-                        return;
-                    }
-                    var selectionLineRange = GetSelectionLineRange();
-                    var type = ToGitHubUrlType(command.CommandID.ID);
-                    var gitHubUrl = git.BuildGitHubUrl(type, selectionLineRange);
-                    System.Diagnostics.Process.Start(gitHubUrl); // open browser
+                    command.Enabled = false;
+                    return;
                 }
+
+                var context = GetCommandContext(command);
+                var urlType = ToGitHubUrlType(command.CommandID.ID);
+                var activeFilePath = GetActiveFilePath(context);
+                var textSelection = GetTextSelection(context);
+                var gitHubUrl = _provider.GetUrl(_git, activeFilePath, urlType, textSelection);
+
+                Process.Start(gitHubUrl)?.Dispose();
             }
             catch (Exception ex)
             {
-                Debug.Write(ex.ToString());
+                Debug.Write(ex);
             }
         }
 
-        string GetActiveFilePath()
+        private static CommandContext GetCommandContext(MenuCommand command)
+        {
+            return command.CommandID.Guid.ToString() switch
+            {
+                PackageGuids.GuidDocumentTabOpenOnGitHubCmdSetString => CommandContext.DocumentTab,
+                PackageGuids.GuidOpenOnGitHubCmdSetString => CommandContext.DocumentEditor,
+                PackageGuids.GuidSolutionExplorerOpenOnGitHubCmdSetString => CommandContext.SolutionExplorer,
+                _ => CommandContext.DocumentEditor
+            };
+        }
+
+        private string GetActiveFilePath(CommandContext context)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            // sometimes, DTE.ActiveDocument.Path is ToLower but GitHub can't open lower path.
-            // fix proper-casing | http://stackoverflow.com/questions/325931/getting-actual-file-name-with-proper-casing-on-windows-with-net
-            var path = GetExactPathName(DTE.ActiveDocument.Path + DTE.ActiveDocument.Name);
+
+            string fileName;
+
+            if (context == CommandContext.SolutionExplorer)
+            {
+                var selectedFiles = _solutionExplorer.GetSelectedFiles();
+
+                if (selectedFiles.Count != 1)
+                {
+                    return string.Empty;
+                }
+
+                fileName = selectedFiles[0];
+            }
+            else
+            {
+                fileName = $"{_dte.ActiveDocument.Path}{_dte.ActiveDocument.Name}";
+            }
+
+            var path = GetExactPathName(fileName);
+
             return path;
         }
 
-        static string GetExactPathName(string pathName)
+        private static string GetExactPathName(string pathName)
         {
             if (!(File.Exists(pathName) || Directory.Exists(pathName)))
                 return pathName;
 
-            var di = new DirectoryInfo(pathName);
+            var directoryInfo = new DirectoryInfo(pathName);
 
-            if (di.Parent != null)
+            if (directoryInfo.Parent == null)
             {
-                return Path.Combine(
-                    GetExactPathName(di.Parent.FullName),
-                    di.Parent.GetFileSystemInfos(di.Name)[0].Name);
+                return directoryInfo.Name.ToUpper(CultureInfo.InvariantCulture);
             }
-            else
-            {
-                return di.Name.ToUpper();
-            }
+
+            var directoryName = GetExactPathName(directoryInfo.Parent.FullName);
+            var fileSystemInfos = directoryInfo.Parent.GetFileSystemInfos(directoryInfo.Name);
+            var fileSystemInfo = fileSystemInfos[0];
+            var fileName = fileSystemInfo.Name;
+
+            var exactPathName = Path.Combine(directoryName, fileName);
+            return exactPathName;
         }
 
-        Tuple<int, int> GetSelectionLineRange()
+        private static SelectedRange GetTextSelection(CommandContext context)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            if (!(DTE.ActiveDocument.Selection is TextSelection selection) || selection.IsEmpty)
+
+            if (context != CommandContext.DocumentEditor ||
+                _dte.ActiveDocument?.Selection is not TextSelection selection ||
+                selection.IsEmpty)
             {
-                return null;
+                return SelectedRange.Empty;
             }
 
-            return Tuple.Create(selection.TopPoint.Line, selection.BottomPoint.Line);
+            return new SelectedRange
+            {
+                TopLine = selection.TopLine,
+                BottomLine = selection.BottomLine,
+                TopColumn = selection.TopPoint.DisplayColumn,
+                BottomColumn = selection.BottomPoint.DisplayColumn
+            };
         }
 
-        static GitHubUrlType ToGitHubUrlType(int commandId)
+        private static GitHubUrlType ToGitHubUrlType(int commandId) => commandId switch
         {
-            if (commandId == PackageCommanddIDs.OpenMaster) return GitHubUrlType.Master;
-            if (commandId == PackageCommanddIDs.OpenBranch) return GitHubUrlType.CurrentBranch;
-            if (commandId == PackageCommanddIDs.OpenRevision) return GitHubUrlType.CurrentRevision;
-            if (commandId == PackageCommanddIDs.OpenRevisionFull) return GitHubUrlType.CurrentRevisionFull;
-            else return GitHubUrlType.Master;
+            PackageCommandIDs.OpenMain => GitHubUrlType.Main,
+            PackageCommandIDs.OpenBranch => GitHubUrlType.CurrentBranch,
+            PackageCommandIDs.OpenRevision => GitHubUrlType.CurrentRevision,
+            PackageCommandIDs.OpenRevisionFull => GitHubUrlType.CurrentRevisionFull,
+            _ => GitHubUrlType.Main
+        };
+
+        protected override void Dispose(bool disposing)
+        {
+            _git?.Dispose();
+            base.Dispose(disposing);
         }
     }
 }
