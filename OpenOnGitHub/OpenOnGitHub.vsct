@@ -46,7 +46,7 @@
                 <CommandFlag>TextChanges</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>Open main</ButtonText>
+                    <ButtonText>main</ButtonText>
                     <CommandName>main</CommandName>
                 </Strings>
             </Button>
@@ -56,7 +56,7 @@
                 <CommandFlag>DynamicVisibility</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>Open branch</ButtonText>
+                    <ButtonText>branch</ButtonText>
                     <CommandName>branch</CommandName>
                 </Strings>
             </Button>
@@ -65,7 +65,7 @@
                 <CommandFlag>TextChanges</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>Open revision</ButtonText>
+                    <ButtonText>revision</ButtonText>
                     <CommandName>revision</CommandName>
                 </Strings>
             </Button>
@@ -74,7 +74,7 @@
                 <CommandFlag>TextChanges</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>Open revision full</ButtonText>
+                    <ButtonText>revision full</ButtonText>
                     <CommandName>revisionFull</CommandName>
                 </Strings>
             </Button>
@@ -83,7 +83,7 @@
                 <CommandFlag>TextChanges</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>Open main</ButtonText>
+                    <ButtonText>main</ButtonText>
                     <CommandName>main</CommandName>
                 </Strings>
             </Button>
@@ -93,7 +93,7 @@
                 <CommandFlag>DynamicVisibility</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>Open branch</ButtonText>
+                    <ButtonText>branch</ButtonText>
                     <CommandName>branch</CommandName>
                 </Strings>
             </Button>
@@ -102,7 +102,7 @@
                 <CommandFlag>TextChanges</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>Open revision</ButtonText>
+                    <ButtonText>revision</ButtonText>
                     <CommandName>revision</CommandName>
                 </Strings>
             </Button>
@@ -111,7 +111,7 @@
                 <CommandFlag>TextChanges</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>Open revision full</ButtonText>
+                    <ButtonText>revision full</ButtonText>
                     <CommandName>revisionFull</CommandName>
                 </Strings>
             </Button>
@@ -120,7 +120,7 @@
                 <CommandFlag>TextChanges</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>Open main</ButtonText>
+                    <ButtonText>main</ButtonText>
                     <CommandName>main</CommandName>
                 </Strings>
             </Button>
@@ -130,7 +130,7 @@
                 <CommandFlag>DynamicVisibility</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>Open branch</ButtonText>
+                    <ButtonText>branch</ButtonText>
                     <CommandName>branch</CommandName>
                 </Strings>
             </Button>
@@ -139,7 +139,7 @@
                 <CommandFlag>TextChanges</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>Open revision</ButtonText>
+                    <ButtonText>revision</ButtonText>
                     <CommandName>revision</CommandName>
                 </Strings>
             </Button>
@@ -148,7 +148,7 @@
                 <CommandFlag>TextChanges</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
                 <Strings>
-                    <ButtonText>Open revision full</ButtonText>
+                    <ButtonText>revision full</ButtonText>
                     <CommandName>revisionFull</CommandName>
                 </Strings>
             </Button>
