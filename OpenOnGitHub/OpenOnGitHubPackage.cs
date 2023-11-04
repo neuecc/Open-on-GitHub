@@ -140,28 +140,24 @@ namespace OpenOnGitHub
                 ? urlDomainParts[urlDomainParts.Length - 2] + "." + urlDomainParts[urlDomainParts.Length - 1]
                 : host;
 
-            if (!UrlProviders.TryGetValue(domain, out var provider))
+            if (UrlProviders.TryGetValue(domain, out var provider))
             {
-                // private server url such like https://tfs.contoso.com:8080/tfs/Project.
-                if (repositoryUri.Port == 8080
-                    && repositoryUri.Segments.Length >= 5
-                    && string.Equals(repositoryUri.Segments[1], "tfs/", StringComparison.Ordinal))
-                {
-                    provider = AzureDevOpsUrlProvider;
-                }
-                // https://gitlab.contoso.com
-                else if (urlDomainParts[0] == "gitlab")
-                {
-                    provider = GitHubLabUrlProvider;
-                }
+                return provider;
             }
 
-            if (provider == null)
+            // Private server url such like https://tfs.contoso.com:8080/tfs/Project.
+            if (repositoryUri.Port == 8080
+                && repositoryUri.Segments.Length >= 5
+                && string.Equals(repositoryUri.Segments[1], "tfs/", StringComparison.Ordinal))
             {
-                throw new InvalidOperationException($"Unknown repository provider: {repositoryUri}");
+                return AzureDevOpsUrlProvider;
             }
 
-            return provider;
+            // Fallback to Git(Hub|Lab) provider as default
+            // https://gitlab.contoso.com
+            // https://{Self-Managed}/{org or user}/{repo name}
+
+            return GitHubLabUrlProvider;
         }
 
         private void ExecuteCommand(object sender, EventArgs e)

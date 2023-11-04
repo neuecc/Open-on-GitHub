@@ -8,4 +8,4 @@ Right click on editor, if repository is hosted on GitHub, you can jump to master
 
 Install
 ---
-Download from [Visual Studio Gallery - Open on GitHub](https://visualstudiogallery.msdn.microsoft.com/79bf2ea3-9e78-4212-b22f-cdcdd75e791d)
+Download from [Visual Studio Gallery - Open on GitHub](https://marketplace.visualstudio.com/items?itemName=neuecc.OpenonGitHub)
