@@ -37,6 +37,7 @@ namespace OpenOnGitHub
             { "github.com", GitHubLabUrlProvider },
             { "gitlab.com", GitHubLabUrlProvider },
             { "gitea.io", new GiteaUrlProvider() },
+            { "gitee.com", new GiteeUrlProvider() },
             { "bitbucket.org", new BitBucketUrlProvider() }
         };
 
@@ -252,21 +253,32 @@ namespace OpenOnGitHub
         private static SelectedRange GetTextSelection(CommandContext context)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-
             if (context != CommandContext.DocumentEditor ||
-                _dte.ActiveDocument?.Selection is not TextSelection selection ||
-                selection.IsEmpty)
+                 _dte.ActiveDocument?.Selection is not TextSelection)
             {
                 return SelectedRange.Empty;
             }
-
-            return new SelectedRange
+            var selection = _dte.ActiveDocument?.Selection as TextSelection;
+            if (selection.IsEmpty)
             {
-                TopLine = selection.TopLine,
-                BottomLine = selection.BottomLine,
-                TopColumn = selection.TopPoint.DisplayColumn,
-                BottomColumn = selection.BottomPoint.DisplayColumn
-            };
+                return new SelectedRange
+                {
+                    TopLine = selection.CurrentLine,
+                    BottomLine = selection.CurrentLine,
+                    TopColumn = selection.CurrentColumn,
+                    BottomColumn = selection.CurrentColumn
+                };
+            }
+            else
+            {
+                return new SelectedRange
+                {
+                    TopLine = selection.TopLine,
+                    BottomLine = selection.BottomLine,
+                    TopColumn = selection.TopPoint.DisplayColumn,
+                    BottomColumn = selection.BottomPoint.DisplayColumn
+                };
+            }
         }
 
         private static GitHubUrlType ToGitHubUrlType(int commandId) => commandId switch

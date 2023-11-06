@@ -189,6 +189,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Providers\GiteaUrlProvider.cs" />
     <Compile Include="GitHubUrlType.cs" />
+    <Compile Include="Providers\GiteeUrlProvider.cs" />
     <Compile Include="Providers\GitHubLabUrlProvider.cs" />
     <Compile Include="GitRepository.cs" />
     <Compile Include="IGitUrlProvider.cs" />
