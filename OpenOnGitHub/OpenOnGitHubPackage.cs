@@ -32,7 +32,7 @@ namespace OpenOnGitHub
         private static readonly IGitUrlProvider GitHubLabUrlProvider = new GitHubLabUrlProvider();
         private static readonly Dictionary<string, IGitUrlProvider> UrlProviders = new()
         {
-            { "dev.azure.com", AzureDevOpsUrlProvider },
+            { "azure.com", AzureDevOpsUrlProvider },
             { "visualstudio.com", AzureDevOpsUrlProvider },
             { "github.com", GitHubLabUrlProvider },
             { "gitlab.com", GitHubLabUrlProvider },
