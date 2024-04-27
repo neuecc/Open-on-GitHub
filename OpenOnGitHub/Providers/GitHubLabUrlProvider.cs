@@ -12,20 +12,28 @@ internal sealed class GitHubLabUrlProvider : IGitUrlProvider
 
         var uri = $"{repository.UrlRoot}/blob/{repositoryTarget}/{fileIndexPath}";
 
-        if (selectedRange == SelectedRange.Empty)
-        {
-            return uri;
-        }
-
-        uri += "#L" + selectedRange.TopLine.ToString(CultureInfo.InvariantCulture);
-
-        if (selectedRange.TopLine != selectedRange.BottomLine)
-        {
-            uri += "-L" + selectedRange.BottomLine.ToString(CultureInfo.InvariantCulture);
-        }
+        uri += GetSelection(selectedRange);
 
         return uri;
     }
 
+    public string GetSelection(SelectedRange selectedRange)
+    {
+        var selection = string.Empty;
+
+        if (selectedRange == SelectedRange.Empty)
+        {
+            return selection;
+        }
+
+        selection += "#L" + selectedRange.TopLine.ToString(CultureInfo.InvariantCulture);
+
+        if (selectedRange.TopLine != selectedRange.BottomLine)
+        {
+            selection += "-L" + selectedRange.BottomLine.ToString(CultureInfo.InvariantCulture);
+        }
+
+        return selection;
+    }
     public bool IsUrlTypeAvailable(GitHubUrlType urlType) => true;
 }

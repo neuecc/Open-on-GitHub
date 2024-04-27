@@ -2,6 +2,7 @@
 using EnvDTE80;
 using Microsoft;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Debugger.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using OpenOnGitHub.Providers;
@@ -45,6 +46,7 @@ namespace OpenOnGitHub
         private IGitUrlProvider _provider;
         private IMenuCommandService _menuCommandService;
         private SolutionExplorerHelper _solutionExplorer;
+        private SourceLinkProvider _sourceLinkProvider;
 
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
@@ -54,10 +56,12 @@ namespace OpenOnGitHub
             await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             _dte = (DTE2)GetGlobalService(typeof(DTE));
+            Assumes.NotNull(_dte);
+            var symbolManager = (IVsDebuggerSymbolSettingsManager120A)GetGlobalService(typeof(SVsShellDebugger));
+            Assumes.NotNull(symbolManager);
+            _sourceLinkProvider = new SourceLinkProvider(_dte, symbolManager, GetGitProviderByUrl);
             _solutionExplorer = new SolutionExplorerHelper((IVsMonitorSelection)await GetServiceAsync(typeof(IVsMonitorSelection)));
             _menuCommandService = (OleMenuCommandService)await GetServiceAsync(typeof(IMenuCommandService));
-
-            Assumes.NotNull(_dte);
             Assumes.NotNull(_menuCommandService);
 
             foreach (var commandContextGuid in PackageGuids.EnumerateCmdSets())
@@ -93,29 +97,40 @@ namespace OpenOnGitHub
                     _git?.Dispose();
                     _git = new GitRepository(activeFilePath);
 
-                    _provider = GetGitProvider();
+                    _provider = GetGitProvider(context);
                 }
 
                 var type = ToGitHubUrlType(command.CommandID.ID);
 
-                if (!_git.IsDiscoveredGitRepository)
+                if (_git.IsDiscoveredGitRepository)
                 {
-                    command.Enabled = false;
-                    command.Text = _git.GetInitialGitHubTargetDescription(type);
-                    return;
-                }
+                    var target = _git.GetGitHubTargetPath(type);
 
-                var target = _git.GetGitHubTargetPath(type);
-
-                if (type == GitHubUrlType.CurrentBranch && target == _git.MainBranchName)
-                {
-                    command.Visible = false;
+                    if (type == GitHubUrlType.CurrentBranch && target == _git.MainBranchName)
+                    {
+                        command.Visible = false;
+                    }
+                    else
+                    {
+                        command.Enabled = _provider.IsUrlTypeAvailable(type);
+                        command.Text = _git.GetGitHubTargetDescription(type);
+                        command.Visible = true;
+                    }
                 }
                 else
                 {
-                    command.Text = _git.GetGitHubTargetDescription(type);
-                    command.Enabled = _provider.IsUrlTypeAvailable(type);
-                    command.Visible = true;
+                    command.Visible = type != GitHubUrlType.CurrentBranch;
+
+                    if (_provider != _sourceLinkProvider || type != GitHubUrlType.CurrentRevisionFull)
+                    {
+                        command.Enabled = false;
+                        command.Text = _git.GetInitialGitHubTargetDescription(type);
+                        return;
+                    }
+                    
+                    command.Enabled = _sourceLinkProvider.IsUrlTypeAvailable(type);
+                    command.Text = _sourceLinkProvider.GetTargetDescription();
+                    
                 }
             }
             catch (Exception ex)
@@ -126,14 +141,22 @@ namespace OpenOnGitHub
             }
         }
 
-        private IGitUrlProvider GetGitProvider()
+        private IGitUrlProvider GetGitProvider(CommandContext context)
         {
             if (!_git.IsDiscoveredGitRepository)
             {
-                return null;
+                if(context == CommandContext.SolutionExplorer || _sourceLinkProvider.IsNotSourceLink(_dte.ActiveDocument))
+                    return null;
+
+                return _sourceLinkProvider;
             }
 
             var repositoryUri = new Uri(_git.UrlRoot);
+            return GetGitProviderByUrl(repositoryUri);
+        }
+
+        private static IGitUrlProvider GetGitProviderByUrl(Uri repositoryUri)
+        {
             var host = repositoryUri.Host;
             var urlDomainParts = host.Split('.');
 
@@ -167,7 +190,7 @@ namespace OpenOnGitHub
             try
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
-                if (!_git.IsDiscoveredGitRepository)
+                if (!_git.IsDiscoveredGitRepository && _sourceLinkProvider != _provider)
                 {
                     command.Enabled = false;
                     return;
