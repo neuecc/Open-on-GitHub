@@ -39,5 +39,5 @@ static class PackageCommandIDs
 
 static class PackageVersion
 {
-    public const string Version = "2.0.5";
+    public const string Version = "2.1.0";
 }
