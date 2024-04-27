@@ -20,5 +20,5 @@ internal static class HashAlgorithmGuids
     }
 
     public static HashAlgorithmName GetName(Guid guid)
-        => TryGetName(guid) ?? throw new CryptographicException("unknown HashAlgorithm " + guid);
+        => TryGetName(guid) ?? throw new CryptographicException("unknown hash algorithm " + guid);
 }

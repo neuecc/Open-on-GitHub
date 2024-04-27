@@ -5,82 +5,81 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace OpenOnGitHub
+namespace OpenOnGitHub;
+
+public class SolutionExplorerHelper
 {
-    public class SolutionExplorerHelper
+    private readonly IVsMonitorSelection _monitorSelection;
+
+    public SolutionExplorerHelper(IVsMonitorSelection monitorSelection)
     {
-        private readonly IVsMonitorSelection _monitorSelection;
+        _monitorSelection = monitorSelection ?? throw new ArgumentNullException(nameof(monitorSelection));
+    }
 
-        public SolutionExplorerHelper(IVsMonitorSelection monitorSelection)
+    public List<string> GetSelectedFiles()
+    {
+        var hierarchyPtr = IntPtr.Zero;
+        var containerPtr = IntPtr.Zero;
+        try
         {
-            _monitorSelection = monitorSelection ?? throw new ArgumentNullException(nameof(monitorSelection));
-        }
+            var files = new List<string>();
 
-        public List<string> GetSelectedFiles()
-        {
-            var hierarchyPtr = IntPtr.Zero;
-            var containerPtr = IntPtr.Zero;
-            try
+            if (_monitorSelection.GetCurrentSelection(out hierarchyPtr, out var itemid, out var multiSelect, out containerPtr) != VSConstants.S_OK)
             {
-                var files = new List<string>();
+                return files;
+            }
 
-                if (_monitorSelection.GetCurrentSelection(out hierarchyPtr, out var itemid, out var multiSelect, out containerPtr) != VSConstants.S_OK)
+            if (multiSelect != null)
+            {
+                if (multiSelect.GetSelectionInfo(out var numberOfSelectedItems, out _) == VSConstants.S_OK &&
+                    numberOfSelectedItems == 2)
                 {
-                    return files;
-                }
-
-                if (multiSelect != null)
-                {
-                    if (multiSelect.GetSelectionInfo(out var numberOfSelectedItems, out _) == VSConstants.S_OK &&
-                        numberOfSelectedItems == 2)
+                    var vsItemSelections = new VSITEMSELECTION[numberOfSelectedItems];
+                    if (multiSelect.GetSelectedItems(0, numberOfSelectedItems, vsItemSelections) == VSConstants.S_OK)
                     {
-                        var vsItemSelections = new VSITEMSELECTION[numberOfSelectedItems];
-                        if (multiSelect.GetSelectedItems(0, numberOfSelectedItems, vsItemSelections) == VSConstants.S_OK)
+                        foreach (var selection in vsItemSelections)
                         {
-                            foreach (var selection in vsItemSelections)
+                            if (TryGetFile(selection.pHier, selection.itemid, out var file))
                             {
-                                if (TryGetFile(selection.pHier, selection.itemid, out var file))
-                                {
-                                    files.Add(file);
-                                }
+                                files.Add(file);
                             }
                         }
                     }
                 }
-                else if (itemid != VSConstants.VSCOOKIE_NIL &&
-                         hierarchyPtr != IntPtr.Zero &&
-                         Marshal.GetObjectForIUnknown(hierarchyPtr) is IVsHierarchy hierarchy &&
-                         TryGetFile(hierarchy, itemid, out var file))
-                {
-                    files.Add(file);
-                }
-
-                return files;
             }
-            finally
+            else if (itemid != VSConstants.VSCOOKIE_NIL &&
+                     hierarchyPtr != IntPtr.Zero &&
+                     Marshal.GetObjectForIUnknown(hierarchyPtr) is IVsHierarchy hierarchy &&
+                     TryGetFile(hierarchy, itemid, out var file))
             {
-                if (hierarchyPtr != IntPtr.Zero)
-                {
-                    Marshal.Release(hierarchyPtr);
-                }
-                if (containerPtr != IntPtr.Zero)
-                {
-                    Marshal.Release(containerPtr);
-                }
+                files.Add(file);
             }
-        }
 
-        private static bool TryGetFile(IVsHierarchy hierarchy, uint itemid, out string file)
+            return files;
+        }
+        finally
         {
-            if (hierarchy != null &&
-                hierarchy.GetCanonicalName(itemid, out file) == VSConstants.S_OK &&
-                file != null &&
-                File.Exists(file))
+            if (hierarchyPtr != IntPtr.Zero)
             {
-                return true;
+                Marshal.Release(hierarchyPtr);
             }
-            file = null;
-            return false;
+            if (containerPtr != IntPtr.Zero)
+            {
+                Marshal.Release(containerPtr);
+            }
         }
+    }
+
+    private static bool TryGetFile(IVsHierarchy hierarchy, uint itemid, out string file)
+    {
+        if (hierarchy != null &&
+            hierarchy.GetCanonicalName(itemid, out file) == VSConstants.S_OK &&
+            file != null &&
+            File.Exists(file))
+        {
+            return true;
+        }
+        file = null;
+        return false;
     }
 }
