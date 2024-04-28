@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the License.txt file in the project root for more information.
 
+// see original file https://github.com/dotnet/sourcelink/blob/main/src/SourceLink.Tools/SourceLinkMap.cs
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -161,9 +163,6 @@ namespace OpenOnGitHub.SourceLinkInternals
         /// <exception cref="ArgumentNullException"><paramref name="path"/> is null.</exception>
         public bool TryGetUri(
             string path,
-#if NETCOREAPP
-            [NotNullWhen(true)]
-#endif
             out string uri)
         {
             if (path == null)

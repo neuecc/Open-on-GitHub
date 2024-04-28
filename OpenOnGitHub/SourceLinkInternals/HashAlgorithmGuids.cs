@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
-
+// See original sources https://github.com/dotnet/sourcelink/blob/main/src/dotnet-sourcelink/HashAlgorithmGuids.cs
 using System;
 using System.Security.Cryptography;
 
