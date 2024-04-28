@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Web;
 
@@ -25,9 +26,7 @@ internal sealed class AzureDevOpsUrlProvider : IGitUrlProvider
 
         query["version"] = $"G{branchOrCommit}{repositoryTarget}";
 
-        var selectionPart = HttpUtility.ParseQueryString(GetSelection(selectedRange));
-
-        query.Add(selectionPart);
+        query.Add(GetSelectionInternal(selectedRange));
 
         uriBuilder.Query = query.ToString();
 
@@ -36,11 +35,16 @@ internal sealed class AzureDevOpsUrlProvider : IGitUrlProvider
 
     public string GetSelection(SelectedRange selectedRange)
     {
-        var selection = string.Empty;
+        var selectionQuery = GetSelectionInternal(selectedRange);
 
+        return selectionQuery.ToString();
+    }
+
+    private static NameValueCollection GetSelectionInternal(SelectedRange selectedRange)
+    {
         if (selectedRange == SelectedRange.Empty)
         {
-            return selection;
+           return [];
         }
 
         var query = HttpUtility.ParseQueryString("");
@@ -50,7 +54,7 @@ internal sealed class AzureDevOpsUrlProvider : IGitUrlProvider
         query["lineStartColumn"] = selectedRange.TopColumn.ToString(CultureInfo.InvariantCulture);
         query["lineEndColumn"] = selectedRange.BottomColumn.ToString(CultureInfo.InvariantCulture);
 
-        return query.ToString();
+        return query;
     }
 
     public bool IsUrlTypeAvailable(GitHubUrlType urlType) => urlType != GitHubUrlType.CurrentRevision;
