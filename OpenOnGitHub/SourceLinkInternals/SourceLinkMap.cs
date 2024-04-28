@@ -48,8 +48,6 @@ internal readonly struct SourceLinkMap
         public readonly string Suffix = suffix;
     }
 
-    public IReadOnlyList<Entry> Entries => _entries;
-
     /// <summary>
     /// Parses Source Link JSON string.
     /// </summary>
@@ -166,7 +164,7 @@ internal readonly struct SourceLinkMap
 #if NETCOREAPP
         [NotNullWhen(true)]
 #endif
-        out string? uri)
+        out string uri)
     {
         if (path == null)
         {

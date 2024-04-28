@@ -25,7 +25,7 @@ public static class WpfHelper
         }
     }
 
-    public static IEnumerable<DependencyObject?> GetObjectsByTypeName(DependencyObject? obj, string name)
+    public static IEnumerable<DependencyObject> GetObjectsByTypeName(DependencyObject obj, string name)
     {
         if (obj == null)
             yield break;

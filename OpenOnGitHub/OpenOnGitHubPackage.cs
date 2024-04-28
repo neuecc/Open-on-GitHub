@@ -96,8 +96,7 @@ public sealed class OpenOnGitHubPackage : AsyncPackage
             {
                 _git?.Dispose();
                 _git = new GitRepository(activeFilePath);
-
-                _provider = GetGitProvider(context);
+                _provider = GetGitProvider();
             }
 
             var type = ToGitHubUrlType(command.CommandID.ID);
@@ -121,16 +120,17 @@ public sealed class OpenOnGitHubPackage : AsyncPackage
             {
                 command.Visible = type != GitHubUrlType.CurrentBranch;
 
-                if (_provider != _sourceLinkProvider || type != GitHubUrlType.CurrentRevisionFull)
+                if (_sourceLinkProvider.IsNotSourceLink(_dte.ActiveDocument) 
+                    || type != GitHubUrlType.CurrentRevisionFull
+                    || context == CommandContext.SolutionExplorer)
                 {
                     command.Enabled = false;
                     command.Text = _git.GetInitialGitHubTargetDescription(type);
                     return;
                 }
                     
-                command.Enabled = _sourceLinkProvider.IsUrlTypeAvailable(type);
+                command.Enabled = true;
                 command.Text = _sourceLinkProvider.GetTargetDescription();
-                    
             }
         }
         catch (Exception ex)
@@ -141,14 +141,11 @@ public sealed class OpenOnGitHubPackage : AsyncPackage
         }
     }
 
-    private IGitUrlProvider GetGitProvider(CommandContext context)
+    private IGitUrlProvider GetGitProvider()
     {
         if (!_git.IsDiscoveredGitRepository)
         {
-            if(context == CommandContext.SolutionExplorer || _sourceLinkProvider.IsNotSourceLink(_dte.ActiveDocument))
-                return null;
-
-            return _sourceLinkProvider;
+            return null;
         }
 
         var repositoryUri = new Uri(_git.UrlRoot);
@@ -190,7 +187,10 @@ public sealed class OpenOnGitHubPackage : AsyncPackage
         try
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            if (!_git.IsDiscoveredGitRepository && _sourceLinkProvider != _provider)
+
+            var isNotSourceLink = _sourceLinkProvider.IsNotSourceLink(_dte.ActiveDocument);
+
+            if (!_git.IsDiscoveredGitRepository && isNotSourceLink)
             {
                 command.Enabled = false;
                 return;
@@ -200,7 +200,10 @@ public sealed class OpenOnGitHubPackage : AsyncPackage
             var urlType = ToGitHubUrlType(command.CommandID.ID);
             var activeFilePath = GetActiveFilePath(context);
             var textSelection = GetTextSelection(context);
-            var gitHubUrl = _provider.GetUrl(_git, activeFilePath, urlType, textSelection);
+
+            var gitHubUrl = isNotSourceLink 
+                ? _provider.GetUrl(_git, activeFilePath, urlType, textSelection)
+                : _sourceLinkProvider.GetUrl(textSelection);
 
             Process.Start(gitHubUrl)?.Dispose();
         }

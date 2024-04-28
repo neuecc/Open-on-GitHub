@@ -234,7 +234,7 @@
     <Compile Include="SourceLinkInternals\DocumentUriProvider.cs" />
     <Compile Include="SourceLinkInternals\HashAlgorithmGuids.cs" />
     <Compile Include="SourceLinkInternals\SourceLinkMap.cs" />
-    <Compile Include="SourceLinkInternals\VisualStudioIntegration.cs" />
+    <Compile Include="SourceLinkInternals\VisualStudioSourceLinkHelper.cs" />
     <Compile Include="SourceLinkInternals\WpfHelper.cs" />
   </ItemGroup>
   <ItemGroup>

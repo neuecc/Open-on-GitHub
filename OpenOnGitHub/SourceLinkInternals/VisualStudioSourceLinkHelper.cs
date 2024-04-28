@@ -10,9 +10,9 @@ using Window = EnvDTE.Window;
 
 namespace OpenOnGitHub.SourceLinkInternals;
 
-internal class VisualStudioIntegration(IVsDebuggerSymbolSettingsManager120A debuggerManager)
+internal sealed class VisualStudioSourceLinkHelper(IVsDebuggerSymbolSettingsManager120A debuggerManager)
 {
-    public string? GetUrl(EnvDTE.Document activeDocument)
+    public string GetSourceLinkDocumentUrl(EnvDTE.Document activeDocument)
     {
         ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -25,7 +25,7 @@ internal class VisualStudioIntegration(IVsDebuggerSymbolSettingsManager120A debu
 
         var documentFullName = activeDocument!.FullName;
 
-        if (activeWindow.Caption.EndsWith("[SourceLink]") != true)
+        if (activeWindow.Caption.EndsWith("[SourceLink]", StringComparison.Ordinal) != true)
         {
             return null;
         }
@@ -34,22 +34,22 @@ internal class VisualStudioIntegration(IVsDebuggerSymbolSettingsManager120A debu
 
         var toolTipLines = toolTip?.Split([Environment.NewLine], StringSplitOptions.None);
 
-        if (toolTipLines?.Length > 1)
+        if (!(toolTipLines?.Length > 1))
         {
-            var dllFullName = toolTipLines[1];
-
-            var (signature, pdbFileName) = GetDllMetadata(dllFullName);
-            IVsDebuggerSymbolSettings120A dbgSym = debuggerManager.GetCurrentSymbolSettings();
-            var cachePath = dbgSym.CachePath;
-
-            var pdbFilePath = Path.Combine(cachePath, pdbFileName, signature, pdbFileName);
-
-            var sourceLinkUri = DocumentUriProvider.GetDocumentUri(pdbFilePath, documentFullName);// toolTipLines[0]);
-
-            return sourceLinkUri;
+            return null;
         }
 
-        return null;
+        var dllFullName = toolTipLines[1];
+
+        var (signature, pdbFileName) = GetDllMetadata(dllFullName);
+        var dbgSym = debuggerManager.GetCurrentSymbolSettings();
+        var cachePath = dbgSym.CachePath;
+
+        var pdbFilePath = Path.Combine(cachePath, pdbFileName, signature, pdbFileName);
+
+        var sourceLinkUri = DocumentUriProvider.GetDocumentUri(pdbFilePath, documentFullName);// toolTipLines[0]);
+
+        return sourceLinkUri;
     }
 
     public static (string signature, string pdbFileName) GetDllMetadata(string dllFilePath)
@@ -59,14 +59,14 @@ internal class VisualStudioIntegration(IVsDebuggerSymbolSettingsManager120A debu
         var debugDirectories = peReader.ReadDebugDirectory().Where(entry => entry.Type == DebugDirectoryEntryType.CodeView).OrderByDescending(e => e.IsPortableCodeView).ToArray();
         var codeViewData = peReader.ReadCodeViewDebugDirectoryData(debugDirectories.First());
 
-        return ($"{codeViewData.Guid.ToString("N").ToUpper()}ffffffff", Path.GetFileName(codeViewData.Path));
+        return ($"{codeViewData.Guid.ToString("N").ToUpperInvariant()}ffffffff", Path.GetFileName(codeViewData.Path));
     }
 
-    private static string? GetWindowTabToolTip(Window docWindow)
+    private static string GetWindowTabToolTip(Window docWindow)
     {
         ThreadHelper.ThrowIfNotOnUIThread();
 
-        string? toolTipValue = null;
+        string toolTipValue = null;
 
         foreach (var window in Application.Current.Windows)
         {
