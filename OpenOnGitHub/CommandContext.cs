@@ -1,8 +1,9 @@
-﻿namespace OpenOnGitHub;
-
-internal enum CommandContext
+﻿namespace OpenOnGitHub
 {
-    DocumentEditor,
-    DocumentTab,
-    SolutionExplorer
+    internal enum CommandContext
+    {
+        DocumentEditor,
+        DocumentTab,
+        SolutionExplorer
+    }
 }

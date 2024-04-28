@@ -1,9 +1,10 @@
-﻿namespace OpenOnGitHub;
-
-public enum GitHubUrlType
+﻿namespace OpenOnGitHub
 {
-    Main,
-    CurrentBranch,
-    CurrentRevision,
-    CurrentRevisionFull
+    public enum GitHubUrlType
+    {
+        Main,
+        CurrentBranch,
+        CurrentRevision,
+        CurrentRevisionFull
+    }
 }

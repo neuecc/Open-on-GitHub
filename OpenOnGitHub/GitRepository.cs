@@ -4,109 +4,110 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace OpenOnGitHub;
-
-public sealed class GitRepository : IDisposable
+namespace OpenOnGitHub
 {
-    private Repository _innerRepository;
-    private string _rootDirectory;
-    public string MainBranchName { get; private set; }
-    public bool IsDiscoveredGitRepository => _innerRepository != null;
-    public string UrlRoot { get; private set; }
-
-    public GitRepository(string targetFullPath)
+    public sealed class GitRepository : IDisposable
     {
-        var repositoryPath = Repository.Discover(targetFullPath);
+        private Repository _innerRepository;
+        private string _rootDirectory;
+        public string MainBranchName { get; private set; }
+        public bool IsDiscoveredGitRepository => _innerRepository != null;
+        public string UrlRoot { get; private set; }
 
-        if (repositoryPath != null)
+        public GitRepository(string targetFullPath)
         {
-            Initialize(repositoryPath);
+            var repositoryPath = Repository.Discover(targetFullPath);
+
+            if (repositoryPath != null)
+            {
+                Initialize(repositoryPath);
+            }
         }
-    }
 
-    private void Initialize(string repositoryPath)
-    {
-        _innerRepository = new Repository(repositoryPath);
-
-        // https://github.com/user/repo.git
-        var originUrl = _innerRepository.Config.Get<string>("remote.origin.url") ??
-                        throw new InvalidOperationException("OriginUrl can't found");
-
-        // https://github.com/user/repo
-        UrlRoot = originUrl.Value.EndsWith(".git", StringComparison.InvariantCultureIgnoreCase)
-            ? originUrl.Value.Substring(0, originUrl.Value.Length - 4) // remove .git
-            : originUrl.Value;
-
-        // git@github.com:user/repo -> http://github.com/user/repo
-        UrlRoot = Regex.Replace(UrlRoot, "^git@(.+):(.+)/(.+)$",
-            match => "http://" + string.Join("/", match.Groups.OfType<Group>().Skip(1).Select(group => group.Value)),
-            RegexOptions.IgnoreCase);
-
-        // https://user@github.com/user/repo -> https://github.com/user/repo
-        UrlRoot = Regex.Replace(UrlRoot, "(?<=^https?://)([^@/]+)@", "");
-
-        //https://github.com/user/repo/ -> https://github.com/user/repo
-        UrlRoot = UrlRoot.TrimEnd('/');
-
-        // foo/bar.cs
-        _rootDirectory = _innerRepository.Info.WorkingDirectory;
-
-        MainBranchName = _innerRepository.Branches.Select(x => x.FriendlyName)
-            .FirstOrDefault(x => new[] { "main", "master" }.Contains(x.ToLower())) ?? "main";
-    }
-
-    public bool IsInsideRepositoryFolder(string filePath)
-    {
-        return filePath.IsSubPathOf(_rootDirectory);
-    }
-
-    public string GetFileIndexPath(string fullFilePath)
-    {
-        return fullFilePath.Substring(_rootDirectory.Length).Replace('\\', '/');
-    }
-
-    public string GetGitHubTargetPath(GitHubUrlType urlType)
-    {
-        return urlType switch
+        private void Initialize(string repositoryPath)
         {
-            GitHubUrlType.CurrentBranch => _innerRepository.Head.FriendlyName.Replace("origin/", ""),
-            GitHubUrlType.CurrentRevision => _innerRepository.Commits.First().Id.ToString(8),
-            GitHubUrlType.CurrentRevisionFull => _innerRepository.Commits.First().Id.Sha,
-            _ => MainBranchName
-        };
-    }
+            _innerRepository = new Repository(repositoryPath);
 
-    public string GetInitialGitHubTargetDescription(GitHubUrlType urlType)
-    {
-        return urlType switch
+            // https://github.com/user/repo.git
+            var originUrl = _innerRepository.Config.Get<string>("remote.origin.url") ??
+                            throw new InvalidOperationException("OriginUrl can't found");
+
+            // https://github.com/user/repo
+            UrlRoot = originUrl.Value.EndsWith(".git", StringComparison.InvariantCultureIgnoreCase)
+                ? originUrl.Value.Substring(0, originUrl.Value.Length - 4) // remove .git
+                : originUrl.Value;
+
+            // git@github.com:user/repo -> http://github.com/user/repo
+            UrlRoot = Regex.Replace(UrlRoot, "^git@(.+):(.+)/(.+)$",
+                match => "http://" + string.Join("/", match.Groups.OfType<Group>().Skip(1).Select(group => group.Value)),
+                RegexOptions.IgnoreCase);
+
+            // https://user@github.com/user/repo -> https://github.com/user/repo
+            UrlRoot = Regex.Replace(UrlRoot, "(?<=^https?://)([^@/]+)@", "");
+
+            //https://github.com/user/repo/ -> https://github.com/user/repo
+            UrlRoot = UrlRoot.TrimEnd('/');
+
+            // foo/bar.cs
+            _rootDirectory = _innerRepository.Info.WorkingDirectory;
+
+            MainBranchName = _innerRepository.Branches.Select(x => x.FriendlyName)
+                .FirstOrDefault(x => new[] { "main", "master" }.Contains(x.ToLower())) ?? "main";
+        }
+
+        public bool IsInsideRepositoryFolder(string filePath)
         {
-            GitHubUrlType.CurrentBranch => "branch",
-            GitHubUrlType.CurrentRevision => "revision",
-            GitHubUrlType.CurrentRevisionFull => "revision full",
-            _ => "main"
-        };
-    }
+            return filePath.IsSubPathOf(_rootDirectory);
+        }
 
-    public string GetGitHubTargetDescription(GitHubUrlType urlType)
-    {
-        return urlType switch
+        public string GetFileIndexPath(string fullFilePath)
         {
-            GitHubUrlType.CurrentBranch => $"branch: {_innerRepository.Head.FriendlyName.Replace("origin/", "")}",
-            GitHubUrlType.CurrentRevision => $"revision: {_innerRepository.Commits.First().Id.ToString(8)}",
-            GitHubUrlType.CurrentRevisionFull => $"revision: {_innerRepository.Commits.First().Id.ToString(8)}... (Full ID)",
-            _ => $"{MainBranchName}"
-        };
-    }
+            return fullFilePath.Substring(_rootDirectory.Length).Replace('\\', '/');
+        }
 
-    public void Dispose()
-    {
-        _innerRepository?.Dispose();
-        _innerRepository = null;
-        GC.SuppressFinalize(this);
-    }
+        public string GetGitHubTargetPath(GitHubUrlType urlType)
+        {
+            return urlType switch
+            {
+                GitHubUrlType.CurrentBranch => _innerRepository.Head.FriendlyName.Replace("origin/", ""),
+                GitHubUrlType.CurrentRevision => _innerRepository.Commits.First().Id.ToString(8),
+                GitHubUrlType.CurrentRevisionFull => _innerRepository.Commits.First().Id.Sha,
+                _ => MainBranchName
+            };
+        }
 
-    ~GitRepository()
-    {
-        _innerRepository?.Dispose();
+        public string GetInitialGitHubTargetDescription(GitHubUrlType urlType)
+        {
+            return urlType switch
+            {
+                GitHubUrlType.CurrentBranch => "branch",
+                GitHubUrlType.CurrentRevision => "revision",
+                GitHubUrlType.CurrentRevisionFull => "revision full",
+                _ => "main"
+            };
+        }
+
+        public string GetGitHubTargetDescription(GitHubUrlType urlType)
+        {
+            return urlType switch
+            {
+                GitHubUrlType.CurrentBranch => $"branch: {_innerRepository.Head.FriendlyName.Replace("origin/", "")}",
+                GitHubUrlType.CurrentRevision => $"revision: {_innerRepository.Commits.First().Id.ToString(8)}",
+                GitHubUrlType.CurrentRevisionFull => $"revision: {_innerRepository.Commits.First().Id.ToString(8)}... (Full ID)",
+                _ => $"{MainBranchName}"
+            };
+        }
+
+        public void Dispose()
+        {
+            _innerRepository?.Dispose();
+            _innerRepository = null;
+            GC.SuppressFinalize(this);
+        }
+
+        ~GitRepository()
+        {
+            _innerRepository?.Dispose();
+        }
     }
 }
