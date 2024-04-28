@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Specialized;
 using System.Globalization;
 using System.Web;
 
@@ -44,13 +43,12 @@ internal sealed class AzureDevOpsUrlProvider : IGitUrlProvider
             return selection;
         }
 
-        var query = new NameValueCollection
-        {
-            ["line"] = selectedRange.TopLine.ToString(CultureInfo.InvariantCulture),
-            ["lineEnd"] = selectedRange.BottomLine.ToString(CultureInfo.InvariantCulture),
-            ["lineStartColumn"] = selectedRange.TopColumn.ToString(CultureInfo.InvariantCulture),
-            ["lineEndColumn"] = selectedRange.BottomColumn.ToString(CultureInfo.InvariantCulture)
-        };
+        var query = HttpUtility.ParseQueryString("");
+
+        query["line"] = selectedRange.TopLine.ToString(CultureInfo.InvariantCulture);
+        query["lineEnd"] = selectedRange.BottomLine.ToString(CultureInfo.InvariantCulture);
+        query["lineStartColumn"] = selectedRange.TopColumn.ToString(CultureInfo.InvariantCulture);
+        query["lineEndColumn"] = selectedRange.BottomColumn.ToString(CultureInfo.InvariantCulture);
 
         return query.ToString();
     }
