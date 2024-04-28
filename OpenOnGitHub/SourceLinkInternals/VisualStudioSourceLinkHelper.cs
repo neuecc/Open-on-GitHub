@@ -42,14 +42,15 @@ internal sealed class VisualStudioSourceLinkHelper(IVsDebuggerSymbolSettingsMana
         var dllFullName = toolTipLines[1];
 
         var (signature, pdbFileName) = GetDllMetadata(dllFullName);
-        var dbgSym = debuggerManager.GetCurrentSymbolSettings();
-        var cachePath = dbgSym.CachePath;
 
-        var pdbFilePath = Path.Combine(cachePath, pdbFileName, signature, pdbFileName);
+        var pdbFilePath = Path.Combine(Path.GetDirectoryName(dllFullName) ?? "", pdbFileName);
 
         if (!File.Exists(pdbFilePath))
         {
-            pdbFilePath = Path.Combine(Path.GetDirectoryName(dllFullName) ?? "", pdbFileName);
+            var dbgSym = debuggerManager.GetCurrentSymbolSettings();
+            var cachePath = dbgSym.CachePath;
+
+            pdbFilePath = Path.Combine(cachePath, pdbFileName, signature, pdbFileName);
 
             if (!File.Exists(pdbFilePath))
             {
