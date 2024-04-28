@@ -47,6 +47,16 @@ internal sealed class VisualStudioSourceLinkHelper(IVsDebuggerSymbolSettingsMana
 
         var pdbFilePath = Path.Combine(cachePath, pdbFileName, signature, pdbFileName);
 
+        if (!File.Exists(pdbFilePath))
+        {
+            pdbFilePath = Path.Combine(Path.GetDirectoryName(dllFullName) ?? "", pdbFileName);
+
+            if (!File.Exists(pdbFilePath))
+            {
+                return null;
+            }
+        }
+
         var sourceLinkUri = DocumentUriProvider.GetDocumentUri(pdbFilePath, documentFullName);// toolTipLines[0]);
 
         return sourceLinkUri;

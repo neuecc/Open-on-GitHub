@@ -16,18 +16,18 @@ internal sealed class SourceLinkProvider(
 
     public string GetUrl(SelectedRange selectedRange)
     {
-        var uri = _sourceLinkHelper.GetSourceLinkDocumentUrl(dte.ActiveDocument);
+        var url = _sourceLinkHelper.GetSourceLinkDocumentUrl(dte.ActiveDocument);
 
-        if (selectedRange == SelectedRange.Empty)
+        if (selectedRange == SelectedRange.Empty || url == null)
         {
-            return uri;
+            return url;
         }
 
-        var provider = gitProviderByUrl(new Uri(uri??""));
+        var provider = gitProviderByUrl(new Uri(url));
 
-        uri += provider.GetSelection(selectedRange);
+        url += provider.GetSelection(selectedRange);
 
-        return uri;
+        return url;
     }
 
     public bool IsNotSourceLink(Document activeDocument)
