@@ -54,7 +54,7 @@ internal sealed class VisualStudioSourceLinkHelper(IVsDebuggerSymbolSettingsMana
 
             if (!File.Exists(pdbFilePath))
             {
-                return null;
+                pdbFilePath = dllFullName;
             }
         }
 
