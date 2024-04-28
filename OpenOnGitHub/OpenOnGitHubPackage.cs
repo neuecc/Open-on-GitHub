@@ -129,8 +129,10 @@ namespace OpenOnGitHub
                         return;
                     }
                     
-                    command.Enabled = true;
-                    command.Text = _sourceLinkProvider.GetTargetDescription();
+                    var description = _sourceLinkProvider.GetTargetDescription();
+
+                    command.Enabled = description != null;
+                    command.Text = description ?? _git.GetInitialGitHubTargetDescription(type);
                 }
             }
             catch (Exception ex)

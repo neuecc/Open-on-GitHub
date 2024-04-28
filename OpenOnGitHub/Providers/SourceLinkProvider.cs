@@ -39,7 +39,13 @@ internal sealed class SourceLinkProvider(
 
     public string GetTargetDescription()
     {
-        var url = _sourceLinkHelper.GetSourceLinkDocumentUrl(dte.ActiveDocument) ?? "NotFound";
+        var url = _sourceLinkHelper.GetSourceLinkDocumentUrl(dte.ActiveDocument);
+
+        if (url == null)
+        {
+            return  null;
+        }
+
         var hash = Regex.Match(url, "/(?<hash>[a-fA-F0-9]+)/", RegexOptions.Compiled).Groups["hash"].Value;
         var hashTruncatedByLength = hash.Length > 8 ? hash.Substring(0, 8) : hash;
         return $"revision: {hashTruncatedByLength}... (Full ID)";
