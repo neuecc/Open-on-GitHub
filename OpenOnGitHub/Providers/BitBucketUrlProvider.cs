@@ -1,11 +1,10 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace OpenOnGitHub.Providers;
 
 internal sealed class BitBucketUrlProvider : IGitUrlProvider
 {
-    public string GetUrl(GitRepository repository, string filePath, GitHubUrlType urlType,
+    public string GetUrl(GitRepository repository, string filePath, GitHubUrlType urlType, 
         SelectedRange selectedRange)
     {
         var fileIndexPath = repository.GetFileIndexPath(filePath);
