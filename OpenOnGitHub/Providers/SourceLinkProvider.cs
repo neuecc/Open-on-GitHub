@@ -5,44 +5,43 @@ using EnvDTE;
 using EnvDTE80;
 using OpenOnGitHub.SourceLinkInternals;
 
-namespace OpenOnGitHub.Providers
+namespace OpenOnGitHub.Providers;
+
+internal sealed class SourceLinkProvider(
+    DTE2 dte,
+    IVsDebuggerSymbolSettingsManager120A debuggerSymbols,
+    Func<Uri, IGitUrlProvider> gitProviderByUrl)
 {
-    internal sealed class SourceLinkProvider(
-        DTE2 dte,
-        IVsDebuggerSymbolSettingsManager120A debuggerSymbols,
-        Func<Uri, IGitUrlProvider> gitProviderByUrl)
+    private readonly VisualStudioSourceLinkHelper _sourceLinkHelper = new(debuggerSymbols);
+
+    public string GetUrl(SelectedRange selectedRange)
     {
-        private readonly VisualStudioSourceLinkHelper _sourceLinkHelper = new(debuggerSymbols);
+        var uri = _sourceLinkHelper.GetSourceLinkDocumentUrl(dte.ActiveDocument);
 
-        public string GetUrl(SelectedRange selectedRange)
+        if (selectedRange == SelectedRange.Empty)
         {
-            var uri = _sourceLinkHelper.GetSourceLinkDocumentUrl(dte.ActiveDocument);
-
-            if (selectedRange == SelectedRange.Empty)
-            {
-                return uri;
-            }
-
-            var provider = gitProviderByUrl(new Uri(uri??""));
-
-            uri += provider.GetSelection(selectedRange);
-
             return uri;
         }
 
-        public bool IsNotSourceLink(Document activeDocument)
-        {
-            var activeWindow = activeDocument?.ActiveWindow;
+        var provider = gitProviderByUrl(new Uri(uri??""));
 
-            return activeWindow?.Caption.EndsWith("[SourceLink]") != true;
-        }
+        uri += provider.GetSelection(selectedRange);
 
-        public string GetTargetDescription()
-        {
-            var url = _sourceLinkHelper.GetSourceLinkDocumentUrl(dte.ActiveDocument) ?? "NotFound";
-            var hash = Regex.Match(url, "/(?<hash>[a-fA-F0-9]+)/", RegexOptions.Compiled).Groups["hash"].Value;
-            var hashTruncatedByLength = hash.Length > 8 ? hash.Substring(0, 8) : hash;
-            return $"revision: {hashTruncatedByLength}... (Full ID)";
-        }
+        return uri;
+    }
+
+    public bool IsNotSourceLink(Document activeDocument)
+    {
+        var activeWindow = activeDocument?.ActiveWindow;
+
+        return activeWindow?.Caption.EndsWith("[SourceLink]") != true;
+    }
+
+    public string GetTargetDescription()
+    {
+        var url = _sourceLinkHelper.GetSourceLinkDocumentUrl(dte.ActiveDocument) ?? "NotFound";
+        var hash = Regex.Match(url, "/(?<hash>[a-fA-F0-9]+)/", RegexOptions.Compiled).Groups["hash"].Value;
+        var hashTruncatedByLength = hash.Length > 8 ? hash.Substring(0, 8) : hash;
+        return $"revision: {hashTruncatedByLength}... (Full ID)";
     }
 }
