@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using EnvDTE;
 using EnvDTE80;
 using OpenOnGitHub.SourceLinkInternals;
+using System.Collections.Generic;
 
 namespace OpenOnGitHub.Providers;
 
@@ -13,10 +14,11 @@ internal sealed class SourceLinkProvider(
     Func<Uri, IGitUrlProvider> gitProviderByUrl)
 {
     private readonly VisualStudioSourceLinkHelper _sourceLinkHelper = new(debuggerSymbols);
+    private readonly Dictionary<string, string> _cachedUrls = new();
 
     public string GetUrl(SelectedRange selectedRange)
     {
-        var url = _sourceLinkHelper.GetSourceLinkDocumentUrl(dte.ActiveDocument);
+        var url = GetUrl();
 
         if (selectedRange == SelectedRange.Empty || url == null)
         {
@@ -30,20 +32,39 @@ internal sealed class SourceLinkProvider(
         return url;
     }
 
-    public bool IsNotSourceLink(Document activeDocument)
+    private string GetUrl()
     {
-        var activeWindow = activeDocument?.ActiveWindow;
+        var documentFullName = dte.ActiveDocument?.FullName;
 
-        return activeWindow?.Caption.EndsWith("[SourceLink]") != true;
+        if (string.IsNullOrWhiteSpace(documentFullName))
+        {
+            return null;
+        }
+
+        if (!_cachedUrls.TryGetValue(documentFullName, out var url))
+        {
+            _cachedUrls[documentFullName] = url = _sourceLinkHelper.GetSourceLinkDocumentUrl(dte.ActiveDocument);
+        }
+
+        return url;
+    }
+
+    public bool IsSourceLink(Document activeDocument)
+    {
+        return (
+                   _cachedUrls.TryGetValue(activeDocument?.FullName ?? "", out var url) 
+                   && !string.IsNullOrWhiteSpace(url)
+               )
+               || activeDocument?.ActiveWindow?.Caption.EndsWith("[SourceLink]") == true;
     }
 
     public string GetTargetDescription()
     {
-        var url = _sourceLinkHelper.GetSourceLinkDocumentUrl(dte.ActiveDocument);
+        var url = GetUrl();
 
         if (url == null)
         {
-            return  null;
+            return null;
         }
 
         var hash = Regex.Match(url, "/(?<hash>[a-fA-F0-9]+)/", RegexOptions.Compiled).Groups["hash"].Value;

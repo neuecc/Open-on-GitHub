@@ -23,8 +23,6 @@ internal sealed class VisualStudioSourceLinkHelper(IVsDebuggerSymbolSettingsMana
             return null;
         }
 
-        var documentFullName = activeDocument!.FullName;
-
         if (activeWindow.Caption.EndsWith("[SourceLink]", StringComparison.Ordinal) != true)
         {
             return null;
@@ -57,6 +55,8 @@ internal sealed class VisualStudioSourceLinkHelper(IVsDebuggerSymbolSettingsMana
                 pdbFilePath = dllFullName;
             }
         }
+
+        var documentFullName = activeDocument!.FullName;
 
         var sourceLinkUri = DocumentUriProvider.GetDocumentUri(pdbFilePath, documentFullName);// toolTipLines[0]);
 

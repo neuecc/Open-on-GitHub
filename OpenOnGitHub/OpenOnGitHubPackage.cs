@@ -120,7 +120,7 @@ namespace OpenOnGitHub
                 {
                     command.Visible = type != GitHubUrlType.CurrentBranch;
 
-                    if (_sourceLinkProvider.IsNotSourceLink(_dte.ActiveDocument) 
+                    if (!_sourceLinkProvider.IsSourceLink(_dte.ActiveDocument) 
                         || type != GitHubUrlType.CurrentRevisionFull
                         || context == CommandContext.SolutionExplorer)
                     {
@@ -190,7 +190,7 @@ namespace OpenOnGitHub
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
-                var isNotSourceLink = _sourceLinkProvider.IsNotSourceLink(_dte.ActiveDocument);
+                var isNotSourceLink = !_sourceLinkProvider.IsSourceLink(_dte.ActiveDocument);
 
                 if (!_git.IsDiscoveredGitRepository && isNotSourceLink)
                 {
