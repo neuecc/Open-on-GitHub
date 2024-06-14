@@ -61,15 +61,39 @@ internal sealed class DocumentUriProvider
     {
         var uriBuilder = new UriBuilder(uri);
 
+        if (uriBuilder.Host == "dev.azure.com")
+        {
+            var pathParts = uriBuilder.Path.Split(['/'], StringSplitOptions.RemoveEmptyEntries).ToList();
+            pathParts.RemoveAt(2);
+            pathParts.RemoveAt(3);
+            pathParts.RemoveAt(4);
+            pathParts[2] = "_git";
+            uriBuilder.Path = string.Join("/", pathParts);
+            var query = uriBuilder.Query.Split('&');
+            var dict = new Dictionary<string, string>();
+
+            foreach (var s in query)
+            {
+                var kvp = s.Split('=');
+                dict[kvp[0].TrimStart('?')]= kvp.Skip(1).FirstOrDefault();
+            }
+
+            dict.Remove("api-version");
+            dict.Remove("versionType");
+            dict["version"] = $"GC{dict["version"]}";
+            uriBuilder.Query = string.Join("&", dict.Select(x => $"{x.Key}={x.Value}"));
+            return uriBuilder.Uri.ToString();
+        }
+
         if (uriBuilder.Host != "raw.githubusercontent.com")
         {
             return uri;
         }
 
         uriBuilder.Host = "github.com";
-        var pathParts = uriBuilder.Path.TrimStart('/').Split('/').ToList();
-        pathParts.Insert(2, "blob");
-        uriBuilder.Path = string.Join("/", pathParts);
+        var pathParts1 = uriBuilder.Path.TrimStart('/').Split('/').ToList();
+        pathParts1.Insert(2, "blob");
+        uriBuilder.Path = string.Join("/", pathParts1);
         return uriBuilder.Uri.ToString();
 
     }

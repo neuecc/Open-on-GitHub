@@ -27,9 +27,20 @@ internal sealed class SourceLinkProvider(
 
         var provider = gitProviderByUrl(new Uri(url));
 
-        url += provider.GetSelection(selectedRange);
+        var uriBuilder = new UriBuilder(url);
 
-        return url;
+        var selection = provider.GetSelection(selectedRange);
+
+        if (!string.IsNullOrEmpty(uriBuilder.Query))
+        {
+            uriBuilder.Query += $"&{selection}";
+        }
+        else
+        {
+            uriBuilder.Query = selection;
+        }
+
+        return uriBuilder.Uri.ToString();
     }
 
     private string GetUrl()
@@ -67,7 +78,7 @@ internal sealed class SourceLinkProvider(
             return null;
         }
 
-        var hash = Regex.Match(url, "/(?<hash>[a-fA-F0-9]+)/", RegexOptions.Compiled).Groups["hash"].Value;
+        var hash = Regex.Match(url, "/(?<hash>[a-fA-F0-9]+)/|/?version=GC(?<hash>[a-fA-F0-9]+)", RegexOptions.Compiled).Groups["hash"].Value;
         var hashTruncatedByLength = hash.Length > 8 ? hash.Substring(0, 8) : hash;
         return $"revision: {hashTruncatedByLength}... (Full ID)";
     }
