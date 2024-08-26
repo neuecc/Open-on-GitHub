@@ -14,7 +14,7 @@ internal sealed class SourceLinkProvider(
     Func<Uri, IGitUrlProvider> gitProviderByUrl)
 {
     private readonly VisualStudioSourceLinkHelper _sourceLinkHelper = new(debuggerSymbols);
-    private readonly Dictionary<string, string> _cachedUrls = new();
+    private readonly Dictionary<string, string> _cachedUrls = [];
 
     public string GetUrl(SelectedRange selectedRange)
     {

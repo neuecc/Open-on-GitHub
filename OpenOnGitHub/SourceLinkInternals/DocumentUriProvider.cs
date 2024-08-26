@@ -120,9 +120,9 @@ internal sealed class DocumentUriProvider
 
         var documentContent = File.ReadAllBytes(documentPath);
 
-        var hashes = hashAlgos.SelectMany(algo => GetHashes(algo, documentContent)).ToArray();
+        var hashes = hashAlgos.SelectMany(algo => GetHashes(algo, documentContent)).ToList();
 
-        var singleFile = filteredDocs.FindAll(fd => hashes.Any(h => fd.Hash.SequenceEqual(h ?? [])));
+        var singleFile = filteredDocs.FindAll(fd => hashes.FindIndex(h => fd.Hash.SequenceEqual(h ?? [])) >= 0);
 
         return singleFile.FirstOrDefault();
     }
@@ -153,7 +153,7 @@ internal sealed class DocumentUriProvider
                 // The file either has CRLF line endings or mixed line endings.
                 // In either case there is no need to substitute LF to CRLF.
                 _ = incrementalHash.GetHashAndReset();
-                return null;
+                return [];
             }
 
             incrementalHash.AppendData(content, index, lf - index);

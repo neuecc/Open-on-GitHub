@@ -52,7 +52,7 @@ namespace OpenOnGitHub
             _rootDirectory = _innerRepository.Info.WorkingDirectory;
 
             MainBranchName = _innerRepository.Branches.Select(x => x.FriendlyName)
-                .FirstOrDefault(x => new[] { "main", "master" }.Contains(x.ToLower())) ?? "main";
+                .FirstOrDefault(x => new[] { "main", "master", "development" }.Contains(x.ToLowerInvariant())) ?? "main";
         }
 
         public bool IsInsideRepositoryFolder(string filePath)

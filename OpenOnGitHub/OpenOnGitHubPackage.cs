@@ -27,7 +27,7 @@ namespace OpenOnGitHub
     [ProvideAutoLoad(VSConstants.UICONTEXT.FolderOpened_string, PackageAutoLoadFlags.BackgroundLoad)]
     public sealed class OpenOnGitHubPackage : AsyncPackage
     {
-        private static DTE2 _dte;
+        private DTE2 _dte;
 
         private static readonly IGitUrlProvider AzureDevOpsUrlProvider = new AzureDevOpsUrlProvider();
         private static readonly IGitUrlProvider GitHubLabUrlProvider = new GitHubLabUrlProvider();
@@ -44,7 +44,6 @@ namespace OpenOnGitHub
 
         private GitRepository _git;
         private IGitUrlProvider _provider;
-        private IMenuCommandService _menuCommandService;
         private SolutionExplorerHelper _solutionExplorer;
         private SourceLinkProvider _sourceLinkProvider;
 
@@ -61,8 +60,8 @@ namespace OpenOnGitHub
             Assumes.NotNull(symbolManager);
             _sourceLinkProvider = new SourceLinkProvider(_dte, symbolManager, GetGitProviderByUrl);
             _solutionExplorer = new SolutionExplorerHelper((IVsMonitorSelection)await GetServiceAsync(typeof(IVsMonitorSelection)));
-            _menuCommandService = (OleMenuCommandService)await GetServiceAsync(typeof(IMenuCommandService));
-            Assumes.NotNull(_menuCommandService);
+            var menuCommandService = (OleMenuCommandService)await GetServiceAsync(typeof(IMenuCommandService));
+            Assumes.NotNull(menuCommandService);
 
             foreach (var commandContextGuid in PackageGuids.EnumerateCmdSets())
             {
@@ -70,7 +69,7 @@ namespace OpenOnGitHub
                 {
                     var menuCommandId = new CommandID(commandContextGuid, commandId);
                     var menuCommand = new OleMenuCommand(ExecuteCommand, null, CheckCommandAvailability, menuCommandId);
-                    _menuCommandService.AddCommand(menuCommand);
+                    menuCommandService.AddCommand(menuCommand);
                 }
             }
         }
@@ -274,15 +273,15 @@ namespace OpenOnGitHub
             return exactPathName;
         }
 
-        private static SelectedRange GetTextSelection(CommandContext context)
+        private SelectedRange GetTextSelection(CommandContext context)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             if (context != CommandContext.DocumentEditor ||
-                _dte.ActiveDocument?.Selection is not TextSelection)
+                _dte.ActiveDocument?.Selection is not TextSelection selection)
             {
                 return SelectedRange.Empty;
             }
-            var selection = _dte.ActiveDocument?.Selection as TextSelection;
+            
             if (selection.IsEmpty)
             {
                 return new SelectedRange
@@ -293,16 +292,14 @@ namespace OpenOnGitHub
                     BottomColumn = selection.CurrentColumn
                 };
             }
-            else
+
+            return new SelectedRange
             {
-                return new SelectedRange
-                {
-                    TopLine = selection.TopLine,
-                    BottomLine = selection.BottomLine,
-                    TopColumn = selection.TopPoint.DisplayColumn,
-                    BottomColumn = selection.BottomPoint.DisplayColumn
-                };
-            }
+                TopLine = selection.TopLine,
+                BottomLine = selection.BottomLine,
+                TopColumn = selection.TopPoint.DisplayColumn,
+                BottomColumn = selection.BottomPoint.DisplayColumn
+            };
         }
 
         private static GitHubUrlType ToGitHubUrlType(int commandId) => commandId switch

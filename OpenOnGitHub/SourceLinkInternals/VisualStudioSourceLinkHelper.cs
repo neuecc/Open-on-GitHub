@@ -23,7 +23,7 @@ internal sealed class VisualStudioSourceLinkHelper(IVsDebuggerSymbolSettingsMana
             return null;
         }
 
-        if (activeWindow.Caption.EndsWith("[SourceLink]", StringComparison.Ordinal) != true)
+        if (!activeWindow.Caption.EndsWith("[SourceLink]", StringComparison.Ordinal))
         {
             return null;
         }
@@ -58,7 +58,7 @@ internal sealed class VisualStudioSourceLinkHelper(IVsDebuggerSymbolSettingsMana
 
         var documentFullName = activeDocument!.FullName;
 
-        var sourceLinkUri = DocumentUriProvider.GetDocumentUri(pdbFilePath, documentFullName);// toolTipLines[0]);
+        var sourceLinkUri = DocumentUriProvider.GetDocumentUri(pdbFilePath, documentFullName);
 
         return sourceLinkUri;
     }
@@ -68,7 +68,7 @@ internal sealed class VisualStudioSourceLinkHelper(IVsDebuggerSymbolSettingsMana
         using var dllStream = File.OpenRead(dllFilePath);
         using var peReader = new PEReader(dllStream, PEStreamOptions.LeaveOpen);
         var debugDirectories = peReader.ReadDebugDirectory().Where(entry => entry.Type == DebugDirectoryEntryType.CodeView).OrderByDescending(e => e.IsPortableCodeView).ToArray();
-        var codeViewData = peReader.ReadCodeViewDebugDirectoryData(debugDirectories.First());
+        var codeViewData = peReader.ReadCodeViewDebugDirectoryData(debugDirectories[0]);
 
         return ($"{codeViewData.Guid.ToString("N").ToUpperInvariant()}ffffffff", Path.GetFileName(codeViewData.Path));
     }
