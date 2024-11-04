@@ -5,6 +5,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using OpenOnGitHub.Providers;
 using System;
 using System.Collections.Generic;
@@ -74,7 +75,7 @@ namespace OpenOnGitHub
             }
         }
 
-        private async void CheckCommandAvailability(object sender, EventArgs e)
+        private void CheckCommandAvailability(object sender, EventArgs e)
         {
             var command = (OleMenuCommand)sender;
 
@@ -97,7 +98,11 @@ namespace OpenOnGitHub
                     _git = new GitRepository(activeFilePath);
                     try
                     {
-                        await _git.InitializeAsync();
+                        var jtf = new JoinableTaskFactory(ThreadHelper.JoinableTaskContext);
+                        jtf.Run(async () =>
+                        {
+                            await _git.InitializeAsync().ConfigureAwait(false);
+                        });
                     }
                     catch
                     {
