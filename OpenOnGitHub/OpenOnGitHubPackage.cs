@@ -91,25 +91,22 @@ namespace OpenOnGitHub
                     command.Enabled = false;
                     return;
                 }
-
-                if (_git?.IsInsideRepositoryFolder(activeFilePath) != true)
+                
+                _git?.Dispose();
+                _git = new GitRepository(activeFilePath);
+                try
                 {
-                    _git?.Dispose();
-                    _git = new GitRepository(activeFilePath);
-                    try
+                    var jtf = new JoinableTaskFactory(ThreadHelper.JoinableTaskContext);
+                    jtf.Run(async () =>
                     {
-                        var jtf = new JoinableTaskFactory(ThreadHelper.JoinableTaskContext);
-                        jtf.Run(async () =>
-                        {
-                            await _git.InitializeAsync().ConfigureAwait(false);
-                        });
-                    }
-                    catch
-                    {
-                    }
-
-                    _provider = GetGitProvider();
+                        await _git.InitializeAsync().ConfigureAwait(false);
+                    });
                 }
+                catch
+                {
+                }
+
+                _provider = GetGitProvider();
 
                 var type = ToGitHubUrlType(command.CommandID.ID);
 
