@@ -220,14 +220,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandContext.cs" />
-    <Compile Include="NewGitRepository.cs" />
+    <Compile Include="GitRepository.cs" />
     <Compile Include="Providers\BitBucketUrlProvider.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Providers\GiteaUrlProvider.cs" />
     <Compile Include="GitHubUrlType.cs" />
     <Compile Include="Providers\GiteeUrlProvider.cs" />
     <Compile Include="Providers\GitHubLabUrlProvider.cs" />
-    <Compile Include="GitRepository.cs" />
     <Compile Include="IGitUrlProvider.cs" />
     <Compile Include="OpenOnGitHubPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

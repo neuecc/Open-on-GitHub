@@ -4,7 +4,7 @@ namespace OpenOnGitHub.Providers;
 
 internal sealed class GitHubLabUrlProvider : IGitUrlProvider
 {
-    public string GetUrl(NewGitRepository repository, string filePath, GitHubUrlType urlType,
+    public string GetUrl(GitRepository repository, string filePath, GitHubUrlType urlType,
         SelectedRange selectedRange)
     {
         var fileIndexPath = repository.GetFileIndexPath(filePath);

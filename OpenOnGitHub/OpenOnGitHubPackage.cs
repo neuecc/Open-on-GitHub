@@ -42,7 +42,7 @@ namespace OpenOnGitHub
             { "bitbucket.org", new BitBucketUrlProvider() }
         };
 
-        private NewGitRepository _git;
+        private GitRepository _git;
         private IGitUrlProvider _provider;
         private SolutionExplorerHelper _solutionExplorer;
         private SourceLinkProvider _sourceLinkProvider;
@@ -94,7 +94,7 @@ namespace OpenOnGitHub
                 if (_git?.IsInsideRepositoryFolder(activeFilePath) != true)
                 {
                     _git?.Dispose();
-                    _git = new NewGitRepository(activeFilePath);
+                    _git = new GitRepository(activeFilePath);
                     try
                     {
                         await _git.InitializeAsync();
