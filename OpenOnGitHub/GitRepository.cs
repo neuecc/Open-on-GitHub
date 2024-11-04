@@ -10,23 +10,17 @@ using GitReader.Structures;
 
 namespace OpenOnGitHub
 {
-    public sealed class GitRepository : IDisposable
+    public sealed class GitRepository(string targetFullPath) : IDisposable
     {
         private StructuredRepository _innerRepository;
         private string _rootDirectory;
-        private readonly string _targetFullPath;
         public string MainBranchName { get; private set; }
         public bool IsDiscoveredGitRepository => _innerRepository != null;
         public string UrlRoot { get; private set; }
 
-        public GitRepository(string targetFullPath)
-        {
-            _targetFullPath = targetFullPath;
-        }
-
         public async Task InitializeAsync()
         {
-            _innerRepository = await Repository.Factory.OpenStructureAsync(_targetFullPath);
+            _innerRepository = await Repository.Factory.OpenStructureAsync(targetFullPath);
 
             // https://github.com/user/repo.git
             if(!_innerRepository.RemoteUrls.TryGetValue("origin", out var originUrl))
