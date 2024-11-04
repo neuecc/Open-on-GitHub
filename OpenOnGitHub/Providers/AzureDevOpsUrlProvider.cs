@@ -10,7 +10,7 @@ namespace OpenOnGitHub.Providers;
 // * or a private server url such like https://tfs.contoso.com:8080/tfs/Project.
 internal sealed class AzureDevOpsUrlProvider : IGitUrlProvider
 {
-    public string GetUrl(GitRepository repository, string filePath, GitHubUrlType urlType,
+    public string GetUrl(NewGitRepository repository, string filePath, GitHubUrlType urlType,
         SelectedRange selectedRange)
     {
         var fileIndexPath = repository.GetFileIndexPath(filePath);

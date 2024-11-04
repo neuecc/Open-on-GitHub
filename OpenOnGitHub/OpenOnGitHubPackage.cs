@@ -42,7 +42,7 @@ namespace OpenOnGitHub
             { "bitbucket.org", new BitBucketUrlProvider() }
         };
 
-        private GitRepository _git;
+        private NewGitRepository _git;
         private IGitUrlProvider _provider;
         private SolutionExplorerHelper _solutionExplorer;
         private SourceLinkProvider _sourceLinkProvider;
@@ -74,7 +74,7 @@ namespace OpenOnGitHub
             }
         }
 
-        private void CheckCommandAvailability(object sender, EventArgs e)
+        private async void CheckCommandAvailability(object sender, EventArgs e)
         {
             var command = (OleMenuCommand)sender;
 
@@ -94,7 +94,15 @@ namespace OpenOnGitHub
                 if (_git?.IsInsideRepositoryFolder(activeFilePath) != true)
                 {
                     _git?.Dispose();
-                    _git = new GitRepository(activeFilePath);
+                    _git = new NewGitRepository(activeFilePath);
+                    try
+                    {
+                        await _git.InitializeAsync();
+                    }
+                    catch
+                    {
+                    }
+
                     _provider = GetGitProvider();
                 }
 

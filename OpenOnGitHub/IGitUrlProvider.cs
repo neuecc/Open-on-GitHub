@@ -2,7 +2,7 @@
 
 public interface IGitUrlProvider
 {
-    string GetUrl(GitRepository repository, string filePath, GitHubUrlType urlType, SelectedRange selectedRange);
+    string GetUrl(NewGitRepository repository, string filePath, GitHubUrlType urlType, SelectedRange selectedRange);
     string GetSelection(SelectedRange selectedRange);
     bool IsUrlTypeAvailable(GitHubUrlType urlType);
 }

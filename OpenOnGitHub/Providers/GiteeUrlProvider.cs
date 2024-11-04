@@ -4,7 +4,7 @@ namespace OpenOnGitHub.Providers;
 
 internal sealed class GiteeUrlProvider : IGitUrlProvider
 {
-    public string GetUrl(GitRepository repository, string filePath, GitHubUrlType urlType,
+    public string GetUrl(NewGitRepository repository, string filePath, GitHubUrlType urlType,
         SelectedRange selectedRange)
     {
         var fileIndexPath = repository.GetFileIndexPath(filePath);
