@@ -47,8 +47,10 @@ namespace OpenOnGitHub
             // foo/bar.cs
             _rootDirectory = Path.GetDirectoryName(_innerRepository.GitPath);
 
-            MainBranchName = _innerRepository.Branches.Values.Select(x => x.Name.ToLower())
-                .FirstOrDefault(x => new[] { "main", "master", "develop" }.Any(x.StartsWith)) ?? "main";
+            var mainBranches = new[] { "main", "master", "develop" };
+            var branches = _innerRepository.Branches.Values.Select(x => x.Name);
+
+            MainBranchName = branches.FirstOrDefault(b => mainBranches.Contains(b, StringComparer.OrdinalIgnoreCase)) ?? "main";
         }
 
         public bool IsInsideRepositoryFolder(string filePath)
@@ -63,6 +65,11 @@ namespace OpenOnGitHub
 
         public string GetGitHubTargetPath(GitHubUrlType urlType)
         {
+            if (_innerRepository?.Head == null)
+            {
+                return MainBranchName;
+            }
+
             return urlType switch
             {
                 GitHubUrlType.CurrentBranch => _innerRepository.Head.Name.Replace("origin/", ""),
@@ -85,12 +92,17 @@ namespace OpenOnGitHub
 
         public string GetGitHubTargetDescription(GitHubUrlType urlType)
         {
+            if (_innerRepository?.Head == null)
+            {
+                return MainBranchName;
+            }
+
             return urlType switch
             {
                 GitHubUrlType.CurrentBranch => $"branch: {_innerRepository.Head.Name.Replace("origin/", "")}",
                 GitHubUrlType.CurrentRevision => $"revision: {ToString(_innerRepository.Head.Head.HashCode, 8)}",
                 GitHubUrlType.CurrentRevisionFull => $"revision: {ToString(_innerRepository.Head.Head.HashCode, 8)}... (Full ID)",
-                _ => $"{MainBranchName}"
+                _ => MainBranchName
             };
         }
 
