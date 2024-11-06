@@ -43,7 +43,7 @@ internal sealed class VisualStudioSourceLinkHelper(IVsDebuggerSymbolSettingsMana
 
         var pdbFilePath = Path.Combine(Path.GetDirectoryName(dllFullName) ?? "", pdbFileName);
 
-        // Ms has changed the default value of Tools > Options -> Debugging > Symbols.
+        // Ms has changed the default value of Tools > Options -> Debugging > Symbols -> Symbol cache directory.
         // Now it's empty by default, so check some default paths and then fallback to the dll path.
         if (!File.Exists(pdbFilePath))
         {
