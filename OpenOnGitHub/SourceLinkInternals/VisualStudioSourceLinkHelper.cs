@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.Debugger.Interop;
+using Microsoft.VisualStudio.Shell;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection.PortableExecutable;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.VisualStudio.Debugger.Interop;
-using Microsoft.VisualStudio.Shell;
 using Window = EnvDTE.Window;
 
 namespace OpenOnGitHub.SourceLinkInternals;
@@ -43,16 +43,30 @@ internal sealed class VisualStudioSourceLinkHelper(IVsDebuggerSymbolSettingsMana
 
         var pdbFilePath = Path.Combine(Path.GetDirectoryName(dllFullName) ?? "", pdbFileName);
 
+        // Ms has changed the default value of Tools > Options -> Debugging > Symbols.
+        // Now it's empty by default, so check some default paths and then fallback to the dll path.
         if (!File.Exists(pdbFilePath))
         {
             var dbgSym = debuggerManager.GetCurrentSymbolSettings();
             var cachePath = dbgSym.CachePath;
 
+            if (string.IsNullOrEmpty(cachePath))
+            {
+                cachePath = Environment.ExpandEnvironmentVariables(@"%LocalAppData%\Temp\SymbolCache");
+            }
+
             pdbFilePath = Path.Combine(cachePath, pdbFileName, signature, pdbFileName);
 
             if (!File.Exists(pdbFilePath))
             {
-                pdbFilePath = dllFullName;
+                cachePath = Environment.ExpandEnvironmentVariables(@"%LocalAppData%\SymbolSourceSymbols");
+
+                pdbFilePath = Path.Combine(cachePath, pdbFileName, signature, pdbFileName);
+
+                if (!File.Exists(pdbFilePath))
+                {
+                    pdbFilePath = dllFullName;
+                }
             }
         }
 
