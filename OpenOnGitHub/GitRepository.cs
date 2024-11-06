@@ -1,41 +1,37 @@
-﻿using LibGit2Sharp;
-using OpenOnGitHub.Extensions;
+﻿using OpenOnGitHub.Extensions;
 using System;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using GitReader;
+using GitReader.Collections;
+using GitReader.Structures;
 
 namespace OpenOnGitHub
 {
-    public sealed class GitRepository : IDisposable
+    public sealed class GitRepository(string targetFullPath) : IDisposable
     {
-        private Repository _innerRepository;
+        private StructuredRepository _innerRepository;
         private string _rootDirectory;
         public string MainBranchName { get; private set; }
         public bool IsDiscoveredGitRepository => _innerRepository != null;
         public string UrlRoot { get; private set; }
 
-        public GitRepository(string targetFullPath)
+        public async Task InitializeAsync()
         {
-            var repositoryPath = Repository.Discover(targetFullPath);
-
-            if (repositoryPath != null)
-            {
-                Initialize(repositoryPath);
-            }
-        }
-
-        private void Initialize(string repositoryPath)
-        {
-            _innerRepository = new Repository(repositoryPath);
+            _innerRepository = await Repository.Factory.OpenStructureAsync(targetFullPath);
 
             // https://github.com/user/repo.git
-            var originUrl = _innerRepository.Config.Get<string>("remote.origin.url") ??
-                            throw new InvalidOperationException("OriginUrl can't found");
+            if(!_innerRepository.RemoteUrls.TryGetValue("origin", out var originUrl))
+            {
+                throw new InvalidOperationException("OriginUrl can't found");
+            }
 
             // https://github.com/user/repo
-            UrlRoot = originUrl.Value.EndsWith(".git", StringComparison.InvariantCultureIgnoreCase)
-                ? originUrl.Value.Substring(0, originUrl.Value.Length - 4) // remove .git
-                : originUrl.Value;
+            UrlRoot = originUrl.EndsWith(".git", StringComparison.InvariantCultureIgnoreCase)
+                ? originUrl.Substring(0, originUrl.Length - 4) // remove .git
+                : originUrl;
 
             // git@github.com:user/repo -> http://github.com/user/repo
             UrlRoot = Regex.Replace(UrlRoot, "^git@(.+):(.+)/(.+)$",
@@ -49,10 +45,12 @@ namespace OpenOnGitHub
             UrlRoot = UrlRoot.TrimEnd('/');
 
             // foo/bar.cs
-            _rootDirectory = _innerRepository.Info.WorkingDirectory;
+            _rootDirectory = Path.GetDirectoryName(_innerRepository.GitPath);
 
-            MainBranchName = _innerRepository.Branches.Select(x => x.FriendlyName)
-                .FirstOrDefault(x => new[] { "main", "master", "develop" }.Contains(x.ToLower())) ?? "main";
+            var mainBranches = new[] { "main", "master", "develop" };
+            var branches = _innerRepository.Branches.Values.Select(x => x.Name);
+
+            MainBranchName = branches.FirstOrDefault(b => mainBranches.Contains(b, StringComparer.OrdinalIgnoreCase)) ?? "main";
         }
 
         public bool IsInsideRepositoryFolder(string filePath)
@@ -67,11 +65,16 @@ namespace OpenOnGitHub
 
         public string GetGitHubTargetPath(GitHubUrlType urlType)
         {
+            if (_innerRepository?.Head == null)
+            {
+                return MainBranchName;
+            }
+
             return urlType switch
             {
-                GitHubUrlType.CurrentBranch => _innerRepository.Head.FriendlyName.Replace("origin/", ""),
-                GitHubUrlType.CurrentRevision => _innerRepository.Commits.First().Id.ToString(8),
-                GitHubUrlType.CurrentRevisionFull => _innerRepository.Commits.First().Id.Sha,
+                GitHubUrlType.CurrentBranch => _innerRepository.Head.Name.Replace("origin/", ""),
+                GitHubUrlType.CurrentRevision => ToString(_innerRepository.Head.Head.HashCode, 8),
+                GitHubUrlType.CurrentRevisionFull => ToString(_innerRepository.Head.Head.HashCode, _innerRepository.Head.Head.HashCode.Length*2),
                 _ => MainBranchName
             };
         }
@@ -89,13 +92,40 @@ namespace OpenOnGitHub
 
         public string GetGitHubTargetDescription(GitHubUrlType urlType)
         {
+            if (_innerRepository?.Head == null)
+            {
+                return MainBranchName;
+            }
+
             return urlType switch
             {
-                GitHubUrlType.CurrentBranch => $"branch: {_innerRepository.Head.FriendlyName.Replace("origin/", "")}",
-                GitHubUrlType.CurrentRevision => $"revision: {_innerRepository.Commits.First().Id.ToString(8)}",
-                GitHubUrlType.CurrentRevisionFull => $"revision: {_innerRepository.Commits.First().Id.ToString(8)}... (Full ID)",
-                _ => $"{MainBranchName}"
+                GitHubUrlType.CurrentBranch => $"branch: {_innerRepository.Head.Name.Replace("origin/", "")}",
+                GitHubUrlType.CurrentRevision => $"revision: {ToString(_innerRepository.Head.Head.HashCode, 8)}",
+                GitHubUrlType.CurrentRevisionFull => $"revision: {ToString(_innerRepository.Head.Head.HashCode, 8)}... (Full ID)",
+                _ => MainBranchName
             };
+        }
+
+        internal static string ToString(byte[] id, int lengthInNibbles)
+        {
+            char[] array = new char[lengthInNibbles];
+            for (int i = 0; i < (lengthInNibbles & -2); i++)
+            {
+                int num = i >> 1;
+                byte index = (byte)(id[num] >> 4);
+                array[i++] = "0123456789abcdef"[index];
+                index = (byte)(id[num] & 0xFu);
+                array[i] = "0123456789abcdef"[index];
+            }
+
+            if ((lengthInNibbles & 1) == 1)
+            {
+                int num2 = lengthInNibbles >> 1;
+                byte index2 = (byte)(id[num2] >> 4);
+                array[lengthInNibbles - 1] = "0123456789abcdef"[index2];
+            }
+
+            return new string(array);
         }
 
         public void Dispose()

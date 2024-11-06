@@ -16,19 +16,28 @@ internal sealed class GiteaUrlProvider : IGitUrlProvider
 
         var uri = $"{repository.UrlRoot}/src/{branchOrCommit}/{repositoryTarget}/{fileIndexPath}";
 
+        uri += GetSelection(selectedRange);
+
+        return uri;
+    }
+
+    public string GetSelection(SelectedRange selectedRange)
+    {
+        var selection = string.Empty;
+
         if (selectedRange == SelectedRange.Empty)
         {
-            return uri;
+            return selection;
         }
 
-        uri += "#L" + selectedRange.TopLine.ToString(CultureInfo.InvariantCulture);
+        selection += "#L" + selectedRange.TopLine.ToString(CultureInfo.InvariantCulture);
 
         if (selectedRange.TopLine != selectedRange.BottomLine)
         {
-            uri += "-" + selectedRange.BottomLine.ToString(CultureInfo.InvariantCulture);
+            selection += "-" + selectedRange.BottomLine.ToString(CultureInfo.InvariantCulture);
         }
 
-        return uri;
+        return selection;
     }
 
     public bool IsUrlTypeAvailable(GitHubUrlType urlType) => true;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Web;
 
@@ -25,16 +26,35 @@ internal sealed class AzureDevOpsUrlProvider : IGitUrlProvider
 
         query["version"] = $"G{branchOrCommit}{repositoryTarget}";
 
-        if (selectedRange != SelectedRange.Empty)
-        {
-            query["line"] = selectedRange.TopLine.ToString(CultureInfo.InvariantCulture);
-            query["lineEnd"] = selectedRange.BottomLine.ToString(CultureInfo.InvariantCulture);
-            query["lineStartColumn"] = selectedRange.TopColumn.ToString(CultureInfo.InvariantCulture);
-            query["lineEndColumn"] = selectedRange.BottomColumn.ToString(CultureInfo.InvariantCulture);
-        }
+        query.Add(GetSelectionInternal(selectedRange));
+
         uriBuilder.Query = query.ToString();
 
         return uriBuilder.Uri.ToString();
+    }
+
+    public string GetSelection(SelectedRange selectedRange)
+    {
+        var selectionQuery = GetSelectionInternal(selectedRange);
+
+        return selectionQuery.ToString();
+    }
+
+    private static NameValueCollection GetSelectionInternal(SelectedRange selectedRange)
+    {
+        if (selectedRange == SelectedRange.Empty)
+        {
+           return [];
+        }
+
+        var query = HttpUtility.ParseQueryString("");
+
+        query["line"] = selectedRange.TopLine.ToString(CultureInfo.InvariantCulture);
+        query["lineEnd"] = selectedRange.BottomLine.ToString(CultureInfo.InvariantCulture);
+        query["lineStartColumn"] = selectedRange.TopColumn.ToString(CultureInfo.InvariantCulture);
+        query["lineEndColumn"] = selectedRange.BottomColumn.ToString(CultureInfo.InvariantCulture);
+
+        return query;
     }
 
     public bool IsUrlTypeAvailable(GitHubUrlType urlType) => urlType != GitHubUrlType.CurrentRevision;

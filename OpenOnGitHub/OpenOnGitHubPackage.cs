@@ -2,8 +2,10 @@
 using EnvDTE80;
 using Microsoft;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Debugger.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using OpenOnGitHub.Providers;
 using System;
 using System.Collections.Generic;
@@ -26,7 +28,7 @@ namespace OpenOnGitHub
     [ProvideAutoLoad(VSConstants.UICONTEXT.FolderOpened_string, PackageAutoLoadFlags.BackgroundLoad)]
     public sealed class OpenOnGitHubPackage : AsyncPackage
     {
-        private static DTE2 _dte;
+        private DTE2 _dte;
 
         private static readonly IGitUrlProvider AzureDevOpsUrlProvider = new AzureDevOpsUrlProvider();
         private static readonly IGitUrlProvider GitHubLabUrlProvider = new GitHubLabUrlProvider();
@@ -43,8 +45,8 @@ namespace OpenOnGitHub
 
         private GitRepository _git;
         private IGitUrlProvider _provider;
-        private IMenuCommandService _menuCommandService;
         private SolutionExplorerHelper _solutionExplorer;
+        private SourceLinkProvider _sourceLinkProvider;
 
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
@@ -54,11 +56,13 @@ namespace OpenOnGitHub
             await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             _dte = (DTE2)GetGlobalService(typeof(DTE));
-            _solutionExplorer = new SolutionExplorerHelper((IVsMonitorSelection)await GetServiceAsync(typeof(IVsMonitorSelection)));
-            _menuCommandService = (OleMenuCommandService)await GetServiceAsync(typeof(IMenuCommandService));
-
             Assumes.NotNull(_dte);
-            Assumes.NotNull(_menuCommandService);
+            var symbolManager = (IVsDebuggerSymbolSettingsManager120A)GetGlobalService(typeof(SVsShellDebugger));
+            Assumes.NotNull(symbolManager);
+            _sourceLinkProvider = new SourceLinkProvider(_dte, symbolManager, GetGitProviderByUrl);
+            _solutionExplorer = new SolutionExplorerHelper((IVsMonitorSelection)await GetServiceAsync(typeof(IVsMonitorSelection)));
+            var menuCommandService = (OleMenuCommandService)await GetServiceAsync(typeof(IMenuCommandService));
+            Assumes.NotNull(menuCommandService);
 
             foreach (var commandContextGuid in PackageGuids.EnumerateCmdSets())
             {
@@ -66,7 +70,7 @@ namespace OpenOnGitHub
                 {
                     var menuCommandId = new CommandID(commandContextGuid, commandId);
                     var menuCommand = new OleMenuCommand(ExecuteCommand, null, CheckCommandAvailability, menuCommandId);
-                    _menuCommandService.AddCommand(menuCommand);
+                    menuCommandService.AddCommand(menuCommand);
                 }
             }
         }
@@ -87,35 +91,57 @@ namespace OpenOnGitHub
                     command.Enabled = false;
                     return;
                 }
-
-                if (_git?.IsInsideRepositoryFolder(activeFilePath) != true)
+                
+                _git?.Dispose();
+                _git = new GitRepository(activeFilePath);
+                try
                 {
-                    _git?.Dispose();
-                    _git = new GitRepository(activeFilePath);
-
-                    _provider = GetGitProvider();
+                    var jtf = new JoinableTaskFactory(ThreadHelper.JoinableTaskContext);
+                    jtf.Run(async () =>
+                    {
+                        await _git.InitializeAsync().ConfigureAwait(false);
+                    });
                 }
+                catch
+                {
+                }
+
+                _provider = GetGitProvider();
 
                 var type = ToGitHubUrlType(command.CommandID.ID);
 
-                if (!_git.IsDiscoveredGitRepository)
+                if (_git.IsDiscoveredGitRepository)
                 {
-                    command.Enabled = false;
-                    command.Text = _git.GetInitialGitHubTargetDescription(type);
-                    return;
-                }
+                    var target = _git.GetGitHubTargetPath(type);
 
-                var target = _git.GetGitHubTargetPath(type);
-
-                if (type == GitHubUrlType.CurrentBranch && target == _git.MainBranchName)
-                {
-                    command.Visible = false;
+                    if (type == GitHubUrlType.CurrentBranch && target == _git.MainBranchName)
+                    {
+                        command.Visible = false;
+                    }
+                    else
+                    {
+                        command.Enabled = _provider.IsUrlTypeAvailable(type);
+                        command.Text = _git.GetGitHubTargetDescription(type);
+                        command.Visible = true;
+                    }
                 }
                 else
                 {
-                    command.Text = _git.GetGitHubTargetDescription(type);
-                    command.Enabled = _provider.IsUrlTypeAvailable(type);
-                    command.Visible = true;
+                    command.Visible = type != GitHubUrlType.CurrentBranch;
+
+                    if (!_sourceLinkProvider.IsSourceLink(_dte.ActiveDocument) 
+                        || type != GitHubUrlType.CurrentRevisionFull
+                        || context == CommandContext.SolutionExplorer)
+                    {
+                        command.Enabled = false;
+                        command.Text = _git.GetInitialGitHubTargetDescription(type);
+                        return;
+                    }
+                    
+                    var description = _sourceLinkProvider.GetTargetDescription();
+
+                    command.Enabled = description != null;
+                    command.Text = description ?? _git.GetInitialGitHubTargetDescription(type);
                 }
             }
             catch (Exception ex)
@@ -134,6 +160,11 @@ namespace OpenOnGitHub
             }
 
             var repositoryUri = new Uri(_git.UrlRoot);
+            return GetGitProviderByUrl(repositoryUri);
+        }
+
+        private static IGitUrlProvider GetGitProviderByUrl(Uri repositoryUri)
+        {
             var host = repositoryUri.Host;
             var urlDomainParts = host.Split('.');
 
@@ -167,7 +198,10 @@ namespace OpenOnGitHub
             try
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
-                if (!_git.IsDiscoveredGitRepository)
+
+                var isNotSourceLink = !_sourceLinkProvider.IsSourceLink(_dte.ActiveDocument);
+
+                if (!_git.IsDiscoveredGitRepository && isNotSourceLink)
                 {
                     command.Enabled = false;
                     return;
@@ -177,7 +211,10 @@ namespace OpenOnGitHub
                 var urlType = ToGitHubUrlType(command.CommandID.ID);
                 var activeFilePath = GetActiveFilePath(context);
                 var textSelection = GetTextSelection(context);
-                var gitHubUrl = _provider.GetUrl(_git, activeFilePath, urlType, textSelection);
+
+                var gitHubUrl = isNotSourceLink 
+                    ? _provider.GetUrl(_git, activeFilePath, urlType, textSelection)
+                    : _sourceLinkProvider.GetUrl(textSelection);
 
                 Process.Start(gitHubUrl)?.Dispose();
             }
@@ -246,15 +283,15 @@ namespace OpenOnGitHub
             return exactPathName;
         }
 
-        private static SelectedRange GetTextSelection(CommandContext context)
+        private SelectedRange GetTextSelection(CommandContext context)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             if (context != CommandContext.DocumentEditor ||
-                 _dte.ActiveDocument?.Selection is not TextSelection)
+                _dte.ActiveDocument?.Selection is not TextSelection selection)
             {
                 return SelectedRange.Empty;
             }
-            var selection = _dte.ActiveDocument?.Selection as TextSelection;
+            
             if (selection.IsEmpty)
             {
                 return new SelectedRange
@@ -265,16 +302,14 @@ namespace OpenOnGitHub
                     BottomColumn = selection.CurrentColumn
                 };
             }
-            else
+
+            return new SelectedRange
             {
-                return new SelectedRange
-                {
-                    TopLine = selection.TopLine,
-                    BottomLine = selection.BottomLine,
-                    TopColumn = selection.TopPoint.DisplayColumn,
-                    BottomColumn = selection.BottomPoint.DisplayColumn
-                };
-            }
+                TopLine = selection.TopLine,
+                BottomLine = selection.BottomLine,
+                TopColumn = selection.TopPoint.DisplayColumn,
+                BottomColumn = selection.BottomPoint.DisplayColumn
+            };
         }
 
         private static GitHubUrlType ToGitHubUrlType(int commandId) => commandId switch

@@ -4,7 +4,7 @@ namespace OpenOnGitHub.Providers;
 
 internal sealed class BitBucketUrlProvider : IGitUrlProvider
 {
-    public string GetUrl(GitRepository repository, string filePath, GitHubUrlType urlType,
+    public string GetUrl(GitRepository repository, string filePath, GitHubUrlType urlType, 
         SelectedRange selectedRange)
     {
         var fileIndexPath = repository.GetFileIndexPath(filePath);
@@ -12,19 +12,28 @@ internal sealed class BitBucketUrlProvider : IGitUrlProvider
 
         var uri = $"{repository.UrlRoot}/src/{repositoryTarget}/{fileIndexPath}";
 
+        uri += GetSelection(selectedRange);
+
+        return uri;
+    }
+
+    public string GetSelection(SelectedRange selectedRange)
+    {
+        var selection = string.Empty;
+
         if (selectedRange == SelectedRange.Empty)
         {
-            return uri;
+            return selection;
         }
 
-        uri += "#lines-" + selectedRange.TopLine.ToString(CultureInfo.InvariantCulture);
+        selection += "#lines-" + selectedRange.TopLine.ToString(CultureInfo.InvariantCulture);
 
         if (selectedRange.TopLine != selectedRange.BottomLine)
         {
-            uri += ":" + selectedRange.BottomLine.ToString(CultureInfo.InvariantCulture);
+            selection += ":" + selectedRange.BottomLine.ToString(CultureInfo.InvariantCulture);
         }
 
-        return uri;
+        return selection;
     }
 
     public bool IsUrlTypeAvailable(GitHubUrlType urlType) => true;

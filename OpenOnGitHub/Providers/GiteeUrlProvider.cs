@@ -12,19 +12,28 @@ internal sealed class GiteeUrlProvider : IGitUrlProvider
 
         var uri = $"{repository.UrlRoot}/blob/{repositoryTarget}/{fileIndexPath}";
 
+        uri += GetSelection(selectedRange);
+
+        return uri;
+    }
+
+    public string GetSelection(SelectedRange selectedRange)
+    {
+        var selection = string.Empty;
+
         if (selectedRange == SelectedRange.Empty)
         {
-            return uri;
+            return selection;
         }
 
-        uri += "#L" + selectedRange.TopLine.ToString(CultureInfo.InvariantCulture);
+        selection += "#L" + selectedRange.TopLine.ToString(CultureInfo.InvariantCulture);
 
         if (selectedRange.TopLine != selectedRange.BottomLine)
         {
-            uri += "-L" + selectedRange.BottomLine.ToString(CultureInfo.InvariantCulture);
+            selection += "-L" + selectedRange.BottomLine.ToString(CultureInfo.InvariantCulture);
         }
 
-        return uri;
+        return selection;
     }
 
     public bool IsUrlTypeAvailable(GitHubUrlType urlType) => true;
