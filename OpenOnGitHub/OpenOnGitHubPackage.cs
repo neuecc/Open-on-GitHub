@@ -91,7 +91,7 @@ namespace OpenOnGitHub
                     command.Enabled = false;
                     return;
                 }
-                
+
                 _git?.Dispose();
                 _git = new GitRepository(activeFilePath);
                 try
@@ -118,6 +118,10 @@ namespace OpenOnGitHub
                     {
                         command.Visible = false;
                     }
+                    else if (type == GitHubUrlType.Develop && !_git.HasDevelopBranch)
+                    {
+                        command.Visible = false;
+                    }
                     else
                     {
                         command.Enabled = _provider.IsUrlTypeAvailable(type);
@@ -129,7 +133,7 @@ namespace OpenOnGitHub
                 {
                     command.Visible = type != GitHubUrlType.CurrentBranch;
 
-                    if (!_sourceLinkProvider.IsSourceLink(_dte.ActiveDocument) 
+                    if (!_sourceLinkProvider.IsSourceLink(_dte.ActiveDocument)
                         || type != GitHubUrlType.CurrentRevisionFull
                         || context == CommandContext.SolutionExplorer)
                     {
@@ -137,7 +141,7 @@ namespace OpenOnGitHub
                         command.Text = _git.GetInitialGitHubTargetDescription(type);
                         return;
                     }
-                    
+
                     var description = _sourceLinkProvider.GetTargetDescription();
 
                     command.Enabled = description != null;
@@ -212,7 +216,7 @@ namespace OpenOnGitHub
                 var activeFilePath = GetActiveFilePath(context);
                 var textSelection = GetTextSelection(context);
 
-                var gitHubUrl = isNotSourceLink 
+                var gitHubUrl = isNotSourceLink
                     ? _provider.GetUrl(_git, activeFilePath, urlType, textSelection)
                     : _sourceLinkProvider.GetUrl(textSelection);
 
@@ -291,7 +295,7 @@ namespace OpenOnGitHub
             {
                 return SelectedRange.Empty;
             }
-            
+
             if (selection.IsEmpty)
             {
                 return new SelectedRange

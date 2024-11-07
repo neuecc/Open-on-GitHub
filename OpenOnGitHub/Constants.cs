@@ -23,14 +23,16 @@ namespace OpenOnGitHub
 
     static class PackageCommandIDs
     {
-        public const int OpenMain = 0x100;
-        public const int OpenBranch = 0x200;
-        public const int OpenRevision = 0x300;
-        public const int OpenRevisionFull = 0x400;
+        public const int OpenMain = 0x100; // main or master
+        public const int OpenDevelop = 0x200; // develop or development
+        public const int OpenBranch = 0x300;
+        public const int OpenRevision = 0x400;
+        public const int OpenRevisionFull = 0x500;
 
         public static IEnumerable<int> Enumerate()
         {
             yield return OpenMain;
+            yield return OpenDevelop;
             yield return OpenBranch;
             yield return OpenRevisionFull;
             yield return OpenRevision;
@@ -39,6 +41,6 @@ namespace OpenOnGitHub
 
     static class PackageVersion
     {
-        public const string Version = "2.1.0";
+        public const string Version = "2.1.1";
     }
 }
