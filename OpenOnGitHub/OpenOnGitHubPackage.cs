@@ -1,4 +1,4 @@
-﻿using EnvDTE;
+using EnvDTE;
 using EnvDTE80;
 using Microsoft;
 using Microsoft.VisualStudio;
@@ -129,6 +129,10 @@ namespace OpenOnGitHub
                     {
                         command.Visible = false;
                     }
+                    else if (type == GitHubUrlType.Develop && !_git.HasDevelopBranch)
+                    {
+                        command.Visible = false;
+                    }
                     else
                     {
                         command.Enabled = _provider.IsUrlTypeAvailable(type);
@@ -140,7 +144,7 @@ namespace OpenOnGitHub
                 {
                     command.Visible = type != GitHubUrlType.CurrentBranch;
 
-                    if (!_sourceLinkProvider.IsSourceLink(_dte.ActiveDocument) 
+                    if (!_sourceLinkProvider.IsSourceLink(_dte.ActiveDocument)
                         || type != GitHubUrlType.CurrentRevisionFull
                         || context == CommandContext.SolutionExplorer)
                     {
@@ -148,7 +152,7 @@ namespace OpenOnGitHub
                         command.Text = _git.GetInitialGitHubTargetDescription(type);
                         return;
                     }
-                    
+
                     var description = _sourceLinkProvider.GetTargetDescription();
 
                     command.Enabled = description != null;
@@ -302,7 +306,7 @@ namespace OpenOnGitHub
             {
                 return SelectedRange.Empty;
             }
-            
+
             if (selection.IsEmpty)
             {
                 return new SelectedRange
@@ -326,6 +330,7 @@ namespace OpenOnGitHub
         private static GitHubUrlType ToGitHubUrlType(int commandId) => commandId switch
         {
             PackageCommandIDs.OpenMain => GitHubUrlType.Main,
+            PackageCommandIDs.OpenDevelop => GitHubUrlType.Develop,
             PackageCommandIDs.OpenBranch => GitHubUrlType.CurrentBranch,
             PackageCommandIDs.OpenRevision => GitHubUrlType.CurrentRevision,
             PackageCommandIDs.OpenRevisionFull => GitHubUrlType.CurrentRevisionFull,

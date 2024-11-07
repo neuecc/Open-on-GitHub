@@ -41,6 +41,7 @@
         </Groups>
 
         <Buttons>
+			<!-- guidOpenOnGitHubCmdSet -->
             <Button guid="guidOpenOnGitHubCmdSet" id="OpenMain" priority="0x0100" type="Button">
                 <Parent guid="guidOpenOnGitHubCmdSet" id="SubMenuGroup" />
                 <CommandFlag>TextChanges</CommandFlag>
@@ -50,7 +51,17 @@
                     <CommandName>main</CommandName>
                 </Strings>
             </Button>
-            <Button guid="guidOpenOnGitHubCmdSet" id="OpenBranch" priority="0x0200" type="Button">
+			<Button guid="guidOpenOnGitHubCmdSet" id="OpenDevelop" priority="0x0200" type="Button">
+				<Parent guid="guidOpenOnGitHubCmdSet" id="SubMenuGroup" />
+				<CommandFlag>TextChanges</CommandFlag>
+				<CommandFlag>DynamicVisibility</CommandFlag>
+				<CommandFlag>DefaultDisabled</CommandFlag>
+				<Strings>
+					<ButtonText>develop</ButtonText>
+					<CommandName>develop</CommandName>
+				</Strings>
+			</Button>
+            <Button guid="guidOpenOnGitHubCmdSet" id="OpenBranch" priority="0x0300" type="Button">
                 <Parent guid="guidOpenOnGitHubCmdSet" id="SubMenuGroup" />
                 <CommandFlag>TextChanges</CommandFlag>
                 <CommandFlag>DynamicVisibility</CommandFlag>
@@ -60,7 +71,7 @@
                     <CommandName>branch</CommandName>
                 </Strings>
             </Button>
-            <Button guid="guidOpenOnGitHubCmdSet" id="OpenRevision" priority="0x0300" type="Button">
+            <Button guid="guidOpenOnGitHubCmdSet" id="OpenRevision" priority="0x0400" type="Button">
                 <Parent guid="guidOpenOnGitHubCmdSet" id="SubMenuGroup" />
                 <CommandFlag>TextChanges</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
@@ -69,7 +80,7 @@
                     <CommandName>revision</CommandName>
                 </Strings>
             </Button>
-            <Button guid="guidOpenOnGitHubCmdSet" id="OpenRevisionFull" priority="0x0400" type="Button">
+            <Button guid="guidOpenOnGitHubCmdSet" id="OpenRevisionFull" priority="0x0500" type="Button">
                 <Parent guid="guidOpenOnGitHubCmdSet" id="SubMenuGroup" />
                 <CommandFlag>TextChanges</CommandFlag>
                 <CommandFlag>DefaultDisabled</CommandFlag>
@@ -78,80 +89,104 @@
                     <CommandName>revisionFull</CommandName>
                 </Strings>
             </Button>
-            <Button guid="guidDocumentTabOpenOnGitHubCmdSet" id="OpenMain" priority="0x0100" type="Button">
-                <Parent guid="guidDocumentTabOpenOnGitHubCmdSet" id="SubMenuGroup" />
-                <CommandFlag>TextChanges</CommandFlag>
-                <CommandFlag>DefaultDisabled</CommandFlag>
-                <Strings>
-                    <ButtonText>main</ButtonText>
-                    <CommandName>main</CommandName>
-                </Strings>
-            </Button>
-            <Button guid="guidDocumentTabOpenOnGitHubCmdSet" id="OpenBranch" priority="0x0200" type="Button">
-                <Parent guid="guidDocumentTabOpenOnGitHubCmdSet" id="SubMenuGroup" />
-                <CommandFlag>TextChanges</CommandFlag>
-                <CommandFlag>DynamicVisibility</CommandFlag>
-                <CommandFlag>DefaultDisabled</CommandFlag>
-                <Strings>
-                    <ButtonText>branch</ButtonText>
-                    <CommandName>branch</CommandName>
-                </Strings>
-            </Button>
-            <Button guid="guidDocumentTabOpenOnGitHubCmdSet" id="OpenRevision" priority="0x0300" type="Button">
-                <Parent guid="guidDocumentTabOpenOnGitHubCmdSet" id="SubMenuGroup" />
-                <CommandFlag>TextChanges</CommandFlag>
-                <CommandFlag>DefaultDisabled</CommandFlag>
-                <Strings>
-                    <ButtonText>revision</ButtonText>
-                    <CommandName>revision</CommandName>
-                </Strings>
-            </Button>
-            <Button guid="guidDocumentTabOpenOnGitHubCmdSet" id="OpenRevisionFull" priority="0x0400" type="Button">
-                <Parent guid="guidDocumentTabOpenOnGitHubCmdSet" id="SubMenuGroup" />
-                <CommandFlag>TextChanges</CommandFlag>
-                <CommandFlag>DefaultDisabled</CommandFlag>
-                <Strings>
-                    <ButtonText>revision full</ButtonText>
-                    <CommandName>revisionFull</CommandName>
-                </Strings>
-            </Button>
-            <Button guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="OpenMain" priority="0x0100" type="Button">
-                <Parent guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="SubMenuGroup" />
-                <CommandFlag>TextChanges</CommandFlag>
-                <CommandFlag>DefaultDisabled</CommandFlag>
-                <Strings>
-                    <ButtonText>main</ButtonText>
-                    <CommandName>main</CommandName>
-                </Strings>
-            </Button>
-            <Button guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="OpenBranch" priority="0x0200" type="Button">
-                <Parent guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="SubMenuGroup" />
-                <CommandFlag>TextChanges</CommandFlag>
-                <CommandFlag>DynamicVisibility</CommandFlag>
-                <CommandFlag>DefaultDisabled</CommandFlag>
-                <Strings>
-                    <ButtonText>branch</ButtonText>
-                    <CommandName>branch</CommandName>
-                </Strings>
-            </Button>
-            <Button guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="OpenRevision" priority="0x0300" type="Button">
-                <Parent guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="SubMenuGroup" />
-                <CommandFlag>TextChanges</CommandFlag>
-                <CommandFlag>DefaultDisabled</CommandFlag>
-                <Strings>
-                    <ButtonText>revision</ButtonText>
-                    <CommandName>revision</CommandName>
-                </Strings>
-            </Button>
-            <Button guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="OpenRevisionFull" priority="0x0400" type="Button">
-                <Parent guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="SubMenuGroup" />
-                <CommandFlag>TextChanges</CommandFlag>
-                <CommandFlag>DefaultDisabled</CommandFlag>
-                <Strings>
-                    <ButtonText>revision full</ButtonText>
-                    <CommandName>revisionFull</CommandName>
-                </Strings>
-            </Button>
+
+			<!-- guidDocumentTabOpenOnGitHubCmdSet -->
+			<Button guid="guidDocumentTabOpenOnGitHubCmdSet" id="OpenMain" priority="0x0100" type="Button">
+				<Parent guid="guidDocumentTabOpenOnGitHubCmdSet" id="SubMenuGroup" />
+				<CommandFlag>TextChanges</CommandFlag>
+				<CommandFlag>DefaultDisabled</CommandFlag>
+				<Strings>
+					<ButtonText>main</ButtonText>
+					<CommandName>main</CommandName>
+				</Strings>
+			</Button>
+			<Button guid="guidDocumentTabOpenOnGitHubCmdSet" id="OpenDevelop" priority="0x0200" type="Button">
+				<Parent guid="guidDocumentTabOpenOnGitHubCmdSet" id="SubMenuGroup" />
+				<CommandFlag>TextChanges</CommandFlag>
+				<CommandFlag>DynamicVisibility</CommandFlag>
+				<CommandFlag>DefaultDisabled</CommandFlag>
+				<Strings>
+					<ButtonText>develop</ButtonText>
+					<CommandName>develop</CommandName>
+				</Strings>
+			</Button>
+			<Button guid="guidDocumentTabOpenOnGitHubCmdSet" id="OpenBranch" priority="0x0300" type="Button">
+				<Parent guid="guidDocumentTabOpenOnGitHubCmdSet" id="SubMenuGroup" />
+				<CommandFlag>TextChanges</CommandFlag>
+				<CommandFlag>DynamicVisibility</CommandFlag>
+				<CommandFlag>DefaultDisabled</CommandFlag>
+				<Strings>
+					<ButtonText>branch</ButtonText>
+					<CommandName>branch</CommandName>
+				</Strings>
+			</Button>
+			<Button guid="guidDocumentTabOpenOnGitHubCmdSet" id="OpenRevision" priority="0x0400" type="Button">
+				<Parent guid="guidDocumentTabOpenOnGitHubCmdSet" id="SubMenuGroup" />
+				<CommandFlag>TextChanges</CommandFlag>
+				<CommandFlag>DefaultDisabled</CommandFlag>
+				<Strings>
+					<ButtonText>revision</ButtonText>
+					<CommandName>revision</CommandName>
+				</Strings>
+			</Button>
+			<Button guid="guidDocumentTabOpenOnGitHubCmdSet" id="OpenRevisionFull" priority="0x0500" type="Button">
+				<Parent guid="guidDocumentTabOpenOnGitHubCmdSet" id="SubMenuGroup" />
+				<CommandFlag>TextChanges</CommandFlag>
+				<CommandFlag>DefaultDisabled</CommandFlag>
+				<Strings>
+					<ButtonText>revision full</ButtonText>
+					<CommandName>revisionFull</CommandName>
+				</Strings>
+			</Button>
+
+			<!-- guidSolutionExplorerOpenOnGitHubCmdSet -->
+			<Button guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="OpenMain" priority="0x0100" type="Button">
+				<Parent guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="SubMenuGroup" />
+				<CommandFlag>TextChanges</CommandFlag>
+				<CommandFlag>DefaultDisabled</CommandFlag>
+				<Strings>
+					<ButtonText>main</ButtonText>
+					<CommandName>main</CommandName>
+				</Strings>
+			</Button>
+			<Button guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="OpenDevelop" priority="0x0200" type="Button">
+				<Parent guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="SubMenuGroup" />
+				<CommandFlag>TextChanges</CommandFlag>
+				<CommandFlag>DynamicVisibility</CommandFlag>
+				<CommandFlag>DefaultDisabled</CommandFlag>
+				<Strings>
+					<ButtonText>develop</ButtonText>
+					<CommandName>develop</CommandName>
+				</Strings>
+			</Button>
+			<Button guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="OpenBranch" priority="0x0300" type="Button">
+				<Parent guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="SubMenuGroup" />
+				<CommandFlag>TextChanges</CommandFlag>
+				<CommandFlag>DynamicVisibility</CommandFlag>
+				<CommandFlag>DefaultDisabled</CommandFlag>
+				<Strings>
+					<ButtonText>branch</ButtonText>
+					<CommandName>branch</CommandName>
+				</Strings>
+			</Button>
+			<Button guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="OpenRevision" priority="0x0400" type="Button">
+				<Parent guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="SubMenuGroup" />
+				<CommandFlag>TextChanges</CommandFlag>
+				<CommandFlag>DefaultDisabled</CommandFlag>
+				<Strings>
+					<ButtonText>revision</ButtonText>
+					<CommandName>revision</CommandName>
+				</Strings>
+			</Button>
+			<Button guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="OpenRevisionFull" priority="0x0500" type="Button">
+				<Parent guid="guidSolutionExplorerOpenOnGitHubCmdSet" id="SubMenuGroup" />
+				<CommandFlag>TextChanges</CommandFlag>
+				<CommandFlag>DefaultDisabled</CommandFlag>
+				<Strings>
+					<ButtonText>revision full</ButtonText>
+					<CommandName>revisionFull</CommandName>
+				</Strings>
+			</Button>
         </Buttons>
     </Commands>
     <CommandPlacements>
@@ -227,10 +262,11 @@
             <IDSymbol name="SubMenuGroup" value="0x1030" />
             <IDSymbol name="SubMenu" value="0x1040" />
             <!-- Command -->
-            <IDSymbol name="OpenMain" value="0x0100" />
-            <IDSymbol name="OpenBranch" value="0x0200" />
-            <IDSymbol name="OpenRevision" value="0x0300" />
-            <IDSymbol name="OpenRevisionFull" value="0x0400" />
+			<IDSymbol name="OpenMain" value="0x0100" />
+			<IDSymbol name="OpenDevelop" value="0x0200" />
+            <IDSymbol name="OpenBranch" value="0x0300" />
+            <IDSymbol name="OpenRevision" value="0x0400" />
+            <IDSymbol name="OpenRevisionFull" value="0x0500" />
         </GuidSymbol>
         
         <GuidSymbol name="guidDocumentTabOpenOnGitHubCmdSet" value="{d676cf29-179a-4595-aeba-d6fe98a0ea69}">
@@ -238,10 +274,11 @@
             <IDSymbol name="SubMenuGroup" value="0x1030" />
             <IDSymbol name="SubMenu" value="0x1040" />
             <!-- Command -->
-            <IDSymbol name="OpenMain" value="0x0100" />
-            <IDSymbol name="OpenBranch" value="0x0200" />
-            <IDSymbol name="OpenRevision" value="0x0300" />
-            <IDSymbol name="OpenRevisionFull" value="0x0400" />
+			<IDSymbol name="OpenMain" value="0x0100" />
+			<IDSymbol name="OpenDevelop" value="0x0200" />
+			<IDSymbol name="OpenBranch" value="0x0300" />
+			<IDSymbol name="OpenRevision" value="0x0400" />
+			<IDSymbol name="OpenRevisionFull" value="0x0500" />
         </GuidSymbol>
 
         <GuidSymbol name="guidSolutionExplorerOpenOnGitHubCmdSet" value="{006a78e9-9324-4388-8254-054dc01ddb59}">
@@ -249,10 +286,11 @@
             <IDSymbol name="SubMenuGroup" value="0x1030" />
             <IDSymbol name="SubMenu" value="0x1040" />
             <!-- Command -->
-            <IDSymbol name="OpenMain" value="0x0100" />
-            <IDSymbol name="OpenBranch" value="0x0200" />
-            <IDSymbol name="OpenRevision" value="0x0300" />
-            <IDSymbol name="OpenRevisionFull" value="0x0400" />
+			<IDSymbol name="OpenMain" value="0x0100" />
+			<IDSymbol name="OpenDevelop" value="0x0200" />
+			<IDSymbol name="OpenBranch" value="0x0300" />
+			<IDSymbol name="OpenRevision" value="0x0400" />
+			<IDSymbol name="OpenRevisionFull" value="0x0500" />
         </GuidSymbol>
 
         <!-- List for various editor types -->
