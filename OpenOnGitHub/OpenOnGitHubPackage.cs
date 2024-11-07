@@ -75,7 +75,7 @@ namespace OpenOnGitHub
             }
         }
 
-        private void CheckCommandAvailability(object sender, EventArgs e)
+        private async void CheckCommandAvailability(object sender, EventArgs e)
         {
             var command = (OleMenuCommand)sender;
 
@@ -91,19 +91,18 @@ namespace OpenOnGitHub
                     command.Enabled = false;
                     return;
                 }
-                
-                _git?.Dispose();
-                _git = new GitRepository(activeFilePath);
-                try
+
+                if (_git?.IsInsideRepositoryFolder(activeFilePath) != true)
                 {
-                    var jtf = new JoinableTaskFactory(ThreadHelper.JoinableTaskContext);
-                    jtf.Run(async () =>
+                    _git?.Dispose();
+                    _git = new GitRepository(activeFilePath);
+                    try
                     {
-                        await _git.InitializeAsync().ConfigureAwait(false);
-                    });
-                }
-                catch
-                {
+                        await _git.InitializeAsync();
+                    }
+                    catch
+                    {
+                    }
                 }
 
                 _provider = GetGitProvider();
@@ -112,7 +111,7 @@ namespace OpenOnGitHub
 
                 if (_git.IsDiscoveredGitRepository)
                 {
-                    var target = _git.GetGitHubTargetPath(type);
+                    var target = await _git.GetGitHubTargetPathAsync(type);
 
                     if (type == GitHubUrlType.CurrentBranch && target == _git.MainBranchName)
                     {
@@ -121,7 +120,7 @@ namespace OpenOnGitHub
                     else
                     {
                         command.Enabled = _provider.IsUrlTypeAvailable(type);
-                        command.Text = _git.GetGitHubTargetDescription(type);
+                        command.Text = await _git.GetGitHubTargetDescriptionAsync(type);
                         command.Visible = true;
                     }
                 }
@@ -192,7 +191,7 @@ namespace OpenOnGitHub
             return GitHubLabUrlProvider;
         }
 
-        private void ExecuteCommand(object sender, EventArgs e)
+        private async void ExecuteCommand(object sender, EventArgs e)
         {
             var command = (OleMenuCommand)sender;
             try
@@ -213,7 +212,7 @@ namespace OpenOnGitHub
                 var textSelection = GetTextSelection(context);
 
                 var gitHubUrl = isNotSourceLink 
-                    ? _provider.GetUrl(_git, activeFilePath, urlType, textSelection)
+                    ?  await _provider.GetUrlAsync(_git, activeFilePath, urlType, textSelection)
                     : _sourceLinkProvider.GetUrl(textSelection);
 
                 Process.Start(gitHubUrl)?.Dispose();
