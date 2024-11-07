@@ -92,17 +92,15 @@ namespace OpenOnGitHub
                     return;
                 }
 
-                if (_git?.IsInsideRepositoryFolder(activeFilePath) != true)
+                
+                _git?.Dispose();
+                _git = new GitRepository(activeFilePath);
+                try
                 {
-                    _git?.Dispose();
-                    _git = new GitRepository(activeFilePath);
-                    try
-                    {
-                        await _git.InitializeAsync();
-                    }
-                    catch
-                    {
-                    }
+                    await _git.InitializeAsync();
+                }
+                catch
+                {
                 }
 
                 _provider = GetGitProvider();
