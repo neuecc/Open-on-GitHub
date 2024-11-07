@@ -319,6 +319,7 @@ namespace OpenOnGitHub
         private static GitHubUrlType ToGitHubUrlType(int commandId) => commandId switch
         {
             PackageCommandIDs.OpenMain => GitHubUrlType.Main,
+            PackageCommandIDs.OpenDevelop => GitHubUrlType.Develop,
             PackageCommandIDs.OpenBranch => GitHubUrlType.CurrentBranch,
             PackageCommandIDs.OpenRevision => GitHubUrlType.CurrentRevision,
             PackageCommandIDs.OpenRevisionFull => GitHubUrlType.CurrentRevisionFull,
