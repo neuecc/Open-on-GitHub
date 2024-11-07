@@ -86,12 +86,11 @@ namespace OpenOnGitHub
 
         private async Task CheckCommandAvailabilityAsync(object sender, EventArgs e)
         {
+            await JoinableTaskFactory.SwitchToMainThreadAsync();
             var command = (OleMenuCommand)sender;
 
             try
             {
-                ThreadHelper.ThrowIfNotOnUIThread();
-
                 var context = GetCommandContext(command);
                 var activeFilePath = GetActiveFilePath(context);
 
