@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace OpenOnGitHub.Providers;
@@ -10,11 +11,11 @@ namespace OpenOnGitHub.Providers;
 // * or a private server url such like https://tfs.contoso.com:8080/tfs/Project.
 internal sealed class AzureDevOpsUrlProvider : IGitUrlProvider
 {
-    public string GetUrl(GitRepository repository, string filePath, GitHubUrlType urlType,
+    public async Task<string> GetUrlAsync(GitRepository repository, string filePath, GitHubUrlType urlType,
         SelectedRange selectedRange)
     {
         var fileIndexPath = repository.GetFileIndexPath(filePath);
-        var repositoryTarget = repository.GetGitHubTargetPath(urlType);
+        var repositoryTarget = await repository.GetGitHubTargetPathAsync(urlType);
 
         var uriBuilder = new UriBuilder(repository.UrlRoot);
         var query = HttpUtility.ParseQueryString(uriBuilder.Query);
