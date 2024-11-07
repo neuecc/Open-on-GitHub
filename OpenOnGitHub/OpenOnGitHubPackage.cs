@@ -75,7 +75,16 @@ namespace OpenOnGitHub
             }
         }
 
-        private async void CheckCommandAvailability(object sender, EventArgs e)
+        private void CheckCommandAvailability(object sender, EventArgs e)
+        {
+            var jtf = new JoinableTaskFactory(ThreadHelper.JoinableTaskContext);
+            jtf.Run(async () =>
+            {
+                await CheckCommandAvailabilityAsync(sender, e).ConfigureAwait(false);
+            });
+        }
+
+        private async Task CheckCommandAvailabilityAsync(object sender, EventArgs e)
         {
             var command = (OleMenuCommand)sender;
 
@@ -92,15 +101,20 @@ namespace OpenOnGitHub
                     return;
                 }
 
-                
-                _git?.Dispose();
-                _git = new GitRepository(activeFilePath);
-                try
+                if (_git?.IsInsideRepositoryFolder(activeFilePath) != true)
                 {
-                    await _git.InitializeAsync();
-                }
-                catch
-                {
+                    _git?.Dispose();
+                    _git = new GitRepository(activeFilePath);
+                    try
+                    {
+                        await _git.InitializeAsync();
+                    }
+                    catch
+                    {
+                        command.Enabled = false;
+                        command.Text = "error: git not found";
+                        return;
+                    }
                 }
 
                 _provider = GetGitProvider();
