@@ -1,14 +1,15 @@
 ﻿using System.Globalization;
+using System.Threading.Tasks;
 
 namespace OpenOnGitHub.Providers;
 
 internal sealed class GiteaUrlProvider : IGitUrlProvider
 {
-    public string GetUrl(GitRepository repository, string filePath, GitHubUrlType urlType,
+    public async Task<string> GetUrlAsync(GitRepository repository, string filePath, GitHubUrlType urlType,
         SelectedRange selectedRange)
     {
         var fileIndexPath = repository.GetFileIndexPath(filePath);
-        var repositoryTarget = repository.GetGitHubTargetPath(urlType);
+        var repositoryTarget = await repository.GetGitHubTargetPathAsync(urlType);
 
         var branchOrCommit = urlType is GitHubUrlType.CurrentRevision or GitHubUrlType.CurrentRevisionFull
             ? "commit"

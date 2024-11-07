@@ -1,4 +1,4 @@
-﻿using OpenOnGitHub.Extensions;
+using OpenOnGitHub.Extensions;
 using System;
 using System.IO;
 using System.Linq;
@@ -6,13 +6,13 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using GitReader;
 using GitReader.Collections;
-using GitReader.Structures;
+using GitReader.Primitive;
 
 namespace OpenOnGitHub
 {
     public sealed class GitRepository(string targetFullPath) : IDisposable
     {
-        private StructuredRepository _innerRepository;
+        private PrimitiveRepository _innerRepository;
         private string _rootDirectory;
         public string MainBranchName { get; private set; }
         public string DevelopBranchName { get; private set; } // nullable
@@ -22,7 +22,7 @@ namespace OpenOnGitHub
 
         public async Task InitializeAsync()
         {
-            _innerRepository = await Repository.Factory.OpenStructureAsync(targetFullPath);
+            _innerRepository = await Repository.Factory.OpenPrimitiveAsync(targetFullPath);
 
             // https://github.com/user/repo.git
             if (!_innerRepository.RemoteUrls.TryGetValue("origin", out var originUrl))
@@ -49,16 +49,11 @@ namespace OpenOnGitHub
             // foo/bar.cs
             _rootDirectory = Path.GetDirectoryName(_innerRepository.GitPath);
 
-            var mainBranches = new[] { "main", "master", "develop" }; // "development" is Contains
-            var developBranches = new[] { "develop" };
-            var branches = _innerRepository.Branches.Values.Select(x => x.Name);
+            var mainBranches = new[] { "main", "master", "develop" };
+            var branches = await _innerRepository.GetBranchHeadReferencesAsync();
+            var branchesNames = branches.Select(x => x.Name);
 
-            MainBranchName = branches.FirstOrDefault(b => mainBranches.Contains(b, StringComparer.OrdinalIgnoreCase)) ?? "main";
-            DevelopBranchName = branches.FirstOrDefault(b => developBranches.Contains(b, StringComparer.OrdinalIgnoreCase));
-            if (MainBranchName == DevelopBranchName)
-            {
-                DevelopBranchName = null;
-            }
+            MainBranchName = branchesNames.FirstOrDefault(b => mainBranches.Contains(b, StringComparer.OrdinalIgnoreCase)) ?? "main";
         }
 
         public bool IsInsideRepositoryFolder(string filePath)
@@ -71,19 +66,25 @@ namespace OpenOnGitHub
             return fullFilePath.Substring(_rootDirectory.Length).Replace('\\', '/');
         }
 
-        public string GetGitHubTargetPath(GitHubUrlType urlType)
+        public async Task<string> GetGitHubTargetPathAsync(GitHubUrlType urlType)
         {
-            if (_innerRepository?.Head == null)
+            if(_innerRepository == null)
+            {
+                return MainBranchName;
+            }
+
+            var head = await _innerRepository.GetCurrentHeadReferenceAsync();
+
+            if (head == null)
             {
                 return MainBranchName;
             }
 
             return urlType switch
             {
-                GitHubUrlType.Develop => DevelopBranchName,
                 GitHubUrlType.CurrentBranch => _innerRepository.Head.Name.Replace("origin/", ""),
                 GitHubUrlType.CurrentRevision => ToString(_innerRepository.Head.Head.HashCode, 8),
-                GitHubUrlType.CurrentRevisionFull => ToString(_innerRepository.Head.Head.HashCode, _innerRepository.Head.Head.HashCode.Length * 2),
+                GitHubUrlType.CurrentRevisionFull => ToString(_innerRepository.Head.Head.HashCode, _innerRepository.Head.Head.HashCode.Length*2),
                 _ => MainBranchName
             };
         }
@@ -100,16 +101,22 @@ namespace OpenOnGitHub
             };
         }
 
-        public string GetGitHubTargetDescription(GitHubUrlType urlType)
+        public async Task<string> GetGitHubTargetDescriptionAsync(GitHubUrlType urlType)
         {
-            if (_innerRepository?.Head == null)
+            if (_innerRepository == null)
+            {
+                return MainBranchName;
+            }
+
+            var head = await _innerRepository.GetCurrentHeadReferenceAsync();
+
+            if (head == null)
             {
                 return MainBranchName;
             }
 
             return urlType switch
             {
-                GitHubUrlType.Develop => DevelopBranchName,
                 GitHubUrlType.CurrentBranch => $"branch: {_innerRepository.Head.Name.Replace("origin/", "")}",
                 GitHubUrlType.CurrentRevision => $"revision: {ToString(_innerRepository.Head.Head.HashCode, 8)}",
                 GitHubUrlType.CurrentRevisionFull => $"revision: {ToString(_innerRepository.Head.Head.HashCode, 8)}... (Full ID)",
