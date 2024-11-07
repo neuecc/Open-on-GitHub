@@ -109,12 +109,7 @@ namespace OpenOnGitHub
                     {
                         await _git.InitializeAsync();
                     }
-                    catch
-                    {
-                        command.Enabled = false;
-                        command.Text = "error: git not found";
-                        return;
-                    }
+                    catch { }
                 }
 
                 _provider = GetGitProvider();
@@ -227,8 +222,8 @@ namespace OpenOnGitHub
                 var activeFilePath = GetActiveFilePath(context);
                 var textSelection = GetTextSelection(context);
 
-                var gitHubUrl = isNotSourceLink 
-                    ?  await _provider.GetUrlAsync(_git, activeFilePath, urlType, textSelection)
+                var gitHubUrl = isNotSourceLink
+                    ? await _provider.GetUrlAsync(_git, activeFilePath, urlType, textSelection)
                     : _sourceLinkProvider.GetUrl(textSelection);
 
                 Process.Start(gitHubUrl)?.Dispose();
