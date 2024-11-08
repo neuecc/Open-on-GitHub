@@ -41,6 +41,6 @@ namespace OpenOnGitHub
 
     static class PackageVersion
     {
-        public const string Version = "2.1.1";
+        public const string Version = "2.1.2";
     }
 }
