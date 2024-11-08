@@ -50,12 +50,11 @@ namespace OpenOnGitHub
             _rootDirectory = Path.GetDirectoryName(_innerRepository.GitPath);
 
             var mainBranches = new[] { "main", "master", "develop" }; // development is Contains
-            var developBranches = new[] { "develop" };
             var branches = await _innerRepository.GetBranchHeadReferencesAsync();
             var branchesNames = branches.Select(x => x.Name).ToArray();
 
             MainBranchName = SearchMainBranchName(branchesNames);
-            DevelopBranchName = branchesNames.FirstOrDefault(b => developBranches.Contains(b, StringComparer.OrdinalIgnoreCase));
+            DevelopBranchName = branchesNames.FirstOrDefault(b => b.ToLower().Contains("develop"));
             if (MainBranchName == DevelopBranchName)
             {
                 DevelopBranchName = null;
