@@ -38,7 +38,7 @@ namespace OpenOnGitHub
             { "visualstudio.com", AzureDevOpsUrlProvider },
             { "github.com", GitHubLabUrlProvider },
             { "gitlab.com", GitHubLabUrlProvider },
-            { "gitea.io", new GiteaUrlProvider() },
+            { "gitea.com", new GiteaUrlProvider() },
             { "gitee.com", new GiteeUrlProvider() },
             { "bitbucket.org", new BitBucketUrlProvider() }
         };

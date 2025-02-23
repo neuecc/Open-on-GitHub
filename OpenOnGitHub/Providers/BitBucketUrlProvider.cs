@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿using OpenOnGitHub.Extensions;
+using System;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace OpenOnGitHub.Providers;
@@ -9,13 +11,12 @@ internal sealed class BitBucketUrlProvider : IGitUrlProvider
         SelectedRange selectedRange)
     {
         var fileIndexPath = repository.GetFileIndexPath(filePath);
-        var repositoryTarget = await repository.GetGitHubTargetPathAsync(urlType);
+        var repositoryTarget = await repository.GetGitHubTargetPathAsync(urlType);        
 
-        var uri = $"{repository.UrlRoot}/src/{repositoryTarget}/{fileIndexPath}";
+        var uri = repository.UrlRoot.AppendUriPathSegments("src", repositoryTarget, fileIndexPath);
+        var uriWithSelection = uri + GetSelection(selectedRange);
 
-        uri += GetSelection(selectedRange);
-
-        return uri;
+        return uriWithSelection;
     }
 
     public string GetSelection(SelectedRange selectedRange)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 namespace OpenOnGitHub.Extensions
 {
@@ -24,6 +25,30 @@ namespace OpenOnGitHub.Extensions
                 .WithEnding("\\"));
 
             return normalizedPath.StartsWith(normalizedBaseDirPath, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Appends path segments to a base URL, ensuring correct slash formatting.
+        /// </summary>
+        /// <param name="baseUrl">The base URL to which path segments should be appended.</param>
+        /// <param name="segments">An array of path segments to append.</param>
+        /// <returns>The full URL with properly formatted path segments.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="baseUrl"/> is null or empty.</exception>
+        public static string AppendUriPathSegments(this string baseUrl, params string[] segments)
+        {
+            var trimmedBase = baseUrl?.TrimEnd('/');
+
+            if (string.IsNullOrWhiteSpace(trimmedBase))
+                throw new ArgumentNullException(nameof(baseUrl));
+
+            var cleanedSegments = segments
+                .Select(s => s?.Trim('/'))
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .ToList();
+
+            cleanedSegments.Insert(0, trimmedBase);
+
+            return string.Join("/", cleanedSegments);
         }
 
         /// <summary>
