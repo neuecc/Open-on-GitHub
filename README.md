@@ -1,6 +1,6 @@
 Open on GitHub
 ===
-Visual Studio Extension for opening files on GitHub, GitLab, Gitea,Gitee, Bitbucket and AzureDevOps (dev.azure.com, visualstudio.com, tfs)
+Visual Studio Extension for opening files on GitHub, GitLab, Gitea, Gitee, Bitbucket and AzureDevOps (dev.azure.com, visualstudio.com, tfs)
 
 ![image](https://github.com/user-attachments/assets/42186b47-20e6-453f-bd2f-3726469883db)
 
@@ -18,4 +18,4 @@ For example, you can jump to dotnet/runtime page directly.
 
 Install
 ---
-Download from [Visual Studio Gallery - Open on GitHub](https://marketplace.visualstudio.com/items?itemName=neuecc.OpenonGitHub)
+Download from [Visual Studio Marketplace - Open on GitHub](https://marketplace.visualstudio.com/items?itemName=neuecc.OpenonGitHub)

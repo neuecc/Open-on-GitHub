@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using OpenOnGitHub.Extensions;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace OpenOnGitHub.Providers;
@@ -15,11 +16,10 @@ internal sealed class GiteaUrlProvider : IGitUrlProvider
             ? "commit"
             : "branch";
 
-        var uri = $"{repository.UrlRoot}/src/{branchOrCommit}/{repositoryTarget}/{fileIndexPath}";
+        var uri = repository.UrlRoot.AppendUriPathSegments("src", branchOrCommit, repositoryTarget, fileIndexPath);
+        var uriWithSelection = uri + GetSelection(selectedRange);
 
-        uri += GetSelection(selectedRange);
-
-        return uri;
+        return uriWithSelection;
     }
 
     public string GetSelection(SelectedRange selectedRange)
@@ -35,7 +35,7 @@ internal sealed class GiteaUrlProvider : IGitUrlProvider
 
         if (selectedRange.TopLine != selectedRange.BottomLine)
         {
-            selection += "-" + selectedRange.BottomLine.ToString(CultureInfo.InvariantCulture);
+            selection += "-L" + selectedRange.BottomLine.ToString(CultureInfo.InvariantCulture);
         }
 
         return selection;
